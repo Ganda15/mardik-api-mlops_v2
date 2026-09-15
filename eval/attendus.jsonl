@@ -1,0 +1,12 @@
+{"contrat_id": "c01", "pages": 2, "clauses_attendues": ["durée", "prix et paiement", "résiliation", "confidentialité", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c02", "pages": 3, "clauses_attendues": ["durée", "prix et paiement", "pénalité de retard", "résiliation", "garantie", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c03", "pages": 3, "clauses_attendues": ["durée", "reconduction tacite", "prix et paiement", "confidentialité", "propriété intellectuelle", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c04", "pages": 4, "clauses_attendues": ["durée", "prix et paiement", "limitation de responsabilité", "force majeure", "résiliation", "données personnelles", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c05", "pages": 4, "clauses_attendues": ["durée", "prix et paiement", "exclusivité", "non-concurrence", "résiliation", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c06", "pages": 5, "clauses_attendues": ["durée", "prix et paiement", "pénalité de retard", "garantie", "limitation de responsabilité", "confidentialité", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c07", "pages": 30, "clauses_attendues": ["durée", "reconduction tacite", "prix et paiement", "pénalité de retard", "résiliation", "confidentialité", "propriété intellectuelle", "limitation de responsabilité", "force majeure", "droit applicable"], "seuil_note": 0.8}
+{"contrat_id": "c08", "pages": 6, "clauses_attendues": ["durée", "prix et paiement", "données personnelles", "confidentialité", "résiliation", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c09", "pages": 8, "clauses_attendues": ["durée", "prix et paiement", "garantie", "propriété intellectuelle", "force majeure", "résiliation", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c10", "pages": 35, "clauses_attendues": ["durée", "prix et paiement", "pénalité de retard", "garantie", "exclusivité", "non-concurrence", "confidentialité", "données personnelles", "résiliation", "droit applicable"], "seuil_note": 0.8}
+{"contrat_id": "c11", "pages": 5, "clauses_attendues": ["durée", "prix et paiement", "limitation de responsabilité", "résiliation", "droit applicable"], "seuil_note": 0.75}
+{"contrat_id": "c12", "pages": 40, "clauses_attendues": ["durée", "reconduction tacite", "prix et paiement", "pénalité de retard", "garantie", "propriété intellectuelle", "limitation de responsabilité", "force majeure", "confidentialité", "données personnelles", "résiliation", "droit applicable"], "seuil_note": 0.8}

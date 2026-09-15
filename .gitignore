@@ -1,19 +1,12 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
 .venv/
 venv/
-env/
-.eggs/
-*.egg-info/
 .pytest_cache/
-.mypy_cache/
 .ruff_cache/
-.coverage
-htmlcov/
+.mypy_cache/
+*.egg-info/
 dist/
 build/
 
@@ -23,17 +16,17 @@ uv.lock
 # Env
 .env
 .env.local
-.env.*.local
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
 .DS_Store
 
-# Docker
-.docker-data/
-
-# Artifact registry data
-artifacts/
+# Généré à l'exécution
+eval/history.jsonl
+eval/.metrics_eval.jsonl
+ops/metrics.jsonl
+ops/registry/journal.jsonl
+ops/registry/v[2-9].*/
+ops/registry/v1.[1-9]*/
+ops/registry/v1.0.[1-9]*/

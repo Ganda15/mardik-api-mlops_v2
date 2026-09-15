@@ -1,0 +1,10 @@
+{
+  "version": "v1.0.0",
+  "commit": "historique",
+  "empreinte": "6a39aefea1a3",
+  "modele": "${LLM_MODEL}",
+  "strategie": "monolithique",
+  "note_eval": null,
+  "date": "2026-09-15T01:07:17+00:00",
+  "note": "version historique, livrée avant la mise en place du gate"
+}

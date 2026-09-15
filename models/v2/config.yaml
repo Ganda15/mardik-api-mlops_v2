@@ -1,0 +1,26 @@
+# Bundle v2 — la nouvelle version. [À COMPLÉTER — chantier 1]
+#
+# Même client LLM que la v1 (app/llm_client.py). Ce qui change, c'est ce
+# bundle. La structure est là ; la stratégie, le schéma de sortie et les
+# paramètres sont à décider — et à justifier en revue de conception.
+#
+# Question : qu'est-ce qui, dans ce fichier, fait qu'une version est une version ?
+
+version: v2.0.0
+modele: ${LLM_MODEL}
+strategie: monolithique          # TODO : map_reduce_clauses (voir app/pipeline/)
+
+prompt: |
+  TODO — le prompt de la v2. Il s'applique à UNE section du contrat (titre +
+  texte), pas au contrat entier. Il doit imposer les libellés de clauses
+  (voir app/llm_client.py::TYPES_CLAUSES) et une sortie JSON.
+
+parametres:
+  temperature: 0.2               # TODO : quelle valeur pour un gate stable ?
+  max_tokens: 300
+  seed: null                     # TODO
+  contexte_max_caracteres: 6000  # par section, plus par contrat
+  essais_eval: 1                 # nombre de passes du gate (moyenne)
+
+schema_sortie: null              # TODO : le schéma JSON de la sortie (clauses : type, extrait, confiance)
+cout_par_1k_tokens: 0.002

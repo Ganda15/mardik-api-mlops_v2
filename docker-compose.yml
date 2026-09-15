@@ -1,27 +1,47 @@
 services:
-  api:
+  # L'application : /v1 (historique), /v2 (à livrer), /analyse (gateway canary).
+  app:
     build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      - registry
-
-  # Mock artifact registry (S3-compatible) for built model versions.
-  registry:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
+    env_file: .env
     environment:
-      MINIO_ROOT_USER: mardik
-      MINIO_ROOT_PASSWORD: mardik-secret
-    ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # console
+      LLM_PROXY_URL: http://proxy:8080
+      METRICS_PATH: /app/ops/metrics.jsonl
+      REGISTRY_PATH: /app/ops/registry
     volumes:
-      - .docker-data/registry:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      - ./ops:/app/ops          # registre, journal et métriques partagés avec le dashboard
+      - ./models:/app/models
+      - ./eval:/app/eval
+    depends_on:
+      - proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # pour joindre Ollama sur la machine hôte
+
+  # Le proxy de dérive, entre l'app et le fournisseur LLM (Azure ou Ollama).
+  proxy:
+    build: .
+    command: python -m ops.drift_proxy
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Le tableau de bord (à implémenter : ops/dashboard.py).
+  dashboard:
+    build: .
+    command: python -m ops.dashboard --serve --port 8501
+    ports:
+      - "8501:8501"
+    env_file: .env
+    environment:
+      METRICS_PATH: /app/ops/metrics.jsonl
+      REGISTRY_PATH: /app/ops/registry
+    volumes:
+      - ./ops:/app/ops
+    depends_on:
+      - app

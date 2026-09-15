@@ -5,10 +5,14 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml ./
-COPY src ./src
+COPY app ./app
+COPY ops ./ops
+COPY eval ./eval
+COPY models ./models
+COPY scripts ./scripts
 
 RUN uv pip install --system --no-cache .
 
-EXPOSE 8000
+EXPOSE 8000 8080 8501
 
-CMD ["uvicorn", "mardik_api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

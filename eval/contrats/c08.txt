@@ -1,0 +1,128 @@
+CONTRAT DE PRESTATIONS DE SERVICES
+
+Entre les soussignés :
+Mardik SAS, société par actions simplifiée dont le siège est à Montpellier, représentée par son Président, ci-après « le Client »,
+
+et
+
+Groupe Tessier SA, représentée par son gérant, ci-après « le Prestataire »,
+
+Il a été convenu ce qui suit.
+
+Préambule
+
+Le Client souhaite confier au Prestataire l'externalisation du support technique de niveau 1 et 2. Le Prestataire déclare disposer des compétences et des moyens nécessaires à cette fin.
+
+Article 1 — Objet
+
+Le présent contrat a pour objet l'externalisation du support technique de niveau 1 et 2, dans les conditions définies ci-après. Le Prestataire s'engage à mettre en œuvre les moyens nécessaires à la bonne exécution des prestations décrites en annexe. Les parties reconnaissent avoir échangé toutes les informations utiles à la définition du périmètre des prestations.
+
+Si l'une quelconque des stipulations du présent contrat était déclarée nulle, les autres stipulations conserveraient leur plein effet. Les titres des articles sont donnés à titre indicatif et ne sauraient influer sur l'interprétation des stipulations qu'ils précèdent. Le Prestataire tient à la disposition du Client, pendant toute l'exécution des Prestations, les documents justificatifs de la qualification de son personnel. Le fait pour une partie de ne pas se prévaloir d'un manquement de l'autre partie ne saurait être interprété comme une renonciation à s'en prévaloir ultérieurement.
+
+Article 2 — Définitions
+
+« Prestations » désigne l'ensemble des travaux, livrables et services décrits à l'annexe 1. « Livrable » désigne tout document, rapport, programme ou support remis au Client dans le cadre des Prestations. « Jour ouvré » désigne tout jour du lundi au vendredi, à l'exception des jours fériés en France. « Comité de pilotage » désigne l'instance de suivi décrite à l'article consacré à la gouvernance.
+
+Les parties s'informent mutuellement de tout changement d'adresse, de représentant ou de coordonnées de contact. Les annexes au présent contrat en font partie intégrante ; en cas de contradiction entre le corps du contrat et une annexe, le corps du contrat prévaut.
+
+Article 3 — Durée
+
+Le présent contrat est conclu pour une durée de 12 mois à compter de sa signature par les deux parties. La durée du contrat peut être prolongée par avenant, d'un commun accord entre les parties.
+
+Article 4 — Prix et modalités de paiement
+
+En contrepartie des Prestations, le Client verse au Prestataire un prix forfaitaire de 149 000 euros hors taxes. Le paiement intervient à trente jours fin de mois à compter de la date de facturation ; les factures sont émises à chaque jalon décrit en annexe.
+
+Article 5 — Données personnelles
+
+Les parties traitent les données personnelles échangées dans le respect du RGPD et de la loi Informatique et Libertés. Le Prestataire agit en qualité de sous-traitant au sens du RGPD pour les données personnelles que le Client lui confie, selon l'annexe dédiée.
+
+Article 6 — Obligations du Client
+
+Le Client met à disposition du Prestataire les informations, accès et interlocuteurs nécessaires. Il valide les Livrables dans un délai de dix Jours ouvrés à compter de leur remise ; passé ce délai, le Livrable est réputé accepté. Le Client désigne un chef de projet, interlocuteur unique du Prestataire pour les questions opérationnelles.
+
+Les échanges entre les parties se font en langue française ; les documents techniques peuvent être rédigés en anglais lorsque leur nature le justifie. Le Client s'engage à faciliter l'accès de ses locaux au personnel du Prestataire, dans le respect de son règlement intérieur et de ses consignes de sécurité. Les parties s'informent mutuellement de tout changement d'adresse, de représentant ou de coordonnées de contact.
+
+Article 7 — Assurances
+
+Le Prestataire déclare être titulaire d'une police d'assurance couvrant les conséquences de son activité professionnelle. Une attestation d'assurance est remise au Client à la signature du contrat, puis à chaque renouvellement de police.
+
+Le fait pour une partie de ne pas se prévaloir d'un manquement de l'autre partie ne saurait être interprété comme une renonciation à s'en prévaloir ultérieurement. Les parties reconnaissent que le présent contrat a été négocié de bonne foi et que chacune d'elles a pu bénéficier des conseils de son choix.
+
+Article 8 — Confidentialité
+
+Chaque partie s'engage à tenir confidentiel tout document ou information de l'autre partie dont elle aurait connaissance à l'occasion du contrat. L'obligation de confidentialité survit cinq ans à l'expiration du contrat, quelle qu'en soit la cause.
+
+Article 9 — Sous-traitance
+
+Le Prestataire peut confier l'exécution d'une partie des Prestations à un sous-traitant, sous réserve d'en informer préalablement le Client. Le Prestataire demeure seul interlocuteur du Client et répond de ses sous-traitants comme de lui-même.
+
+Les annexes au présent contrat en font partie intégrante ; en cas de contradiction entre le corps du contrat et une annexe, le corps du contrat prévaut. Les titres des articles sont donnés à titre indicatif et ne sauraient influer sur l'interprétation des stipulations qu'ils précèdent. Les parties s'informent mutuellement de tout changement d'adresse, de représentant ou de coordonnées de contact. Les annexes au présent contrat en font partie intégrante ; en cas de contradiction entre le corps du contrat et une annexe, le corps du contrat prévaut.
+
+Article 10 — Gouvernance et comité de pilotage
+
+Un comité de pilotage se réunit mensuellement, ou à la demande de l'une des parties. Il examine l'avancement des Prestations, les risques identifiés et les décisions à prendre. Un compte rendu est rédigé par le Prestataire et diffusé aux participants sous cinq Jours ouvrés.
+
+Les parties s'informent mutuellement de tout changement d'adresse, de représentant ou de coordonnées de contact. Le Client s'engage à faciliter l'accès de ses locaux au personnel du Prestataire, dans le respect de son règlement intérieur et de ses consignes de sécurité. Le Prestataire remet au Client, à chaque étape, un rapport d'avancement détaillant les actions réalisées, les actions en cours et les points d'attention identifiés.
+
+Article 11 — Indépendance des parties
+
+Les parties sont des entités indépendantes ; aucune disposition du présent contrat ne crée de lien de subordination, de société ou de mandat entre elles.
+
+Les échanges entre les parties se font en langue française ; les documents techniques peuvent être rédigés en anglais lorsque leur nature le justifie. Les titres des articles sont donnés à titre indicatif et ne sauraient influer sur l'interprétation des stipulations qu'ils précèdent. Les titres des articles sont donnés à titre indicatif et ne sauraient influer sur l'interprétation des stipulations qu'ils précèdent.
+
+Article 12 — Cession
+
+Aucune partie ne peut céder le présent contrat à un tiers sans l'accord préalable et écrit de l'autre partie. Cet accord ne peut être refusé sans motif légitime en cas de cession à une société du même groupe.
+
+Les parties conviennent de se rencontrer régulièrement afin de faire le point sur l'avancement des travaux et d'ajuster, si nécessaire, le calendrier prévisionnel figurant en annexe. Le Prestataire tient à la disposition du Client, pendant toute l'exécution des Prestations, les documents justificatifs de la qualification de son personnel.
+
+Article 13 — Obligations du Prestataire
+
+Le Prestataire exécute les Prestations conformément aux règles de l'art et aux spécifications convenues. Il affecte aux Prestations un personnel qualifié, dont il assure l'encadrement et la coordination. Le Prestataire informe sans délai le Client de toute difficulté susceptible d'affecter le calendrier. Il tient à jour un tableau de suivi des actions, transmis au Client à chaque comité.
+
+Si l'une quelconque des stipulations du présent contrat était déclarée nulle, les autres stipulations conserveraient leur plein effet. Le Prestataire remet au Client, à chaque étape, un rapport d'avancement détaillant les actions réalisées, les actions en cours et les points d'attention identifiés. Le Client communique au Prestataire, au plus tard quinze jours avant le démarrage, le calendrier de ses périodes de fermeture. Les parties reconnaissent que le présent contrat a été négocié de bonne foi et que chacune d'elles a pu bénéficier des conseils de son choix.
+
+Article 14 — Intégralité et modifications
+
+Le présent contrat et ses annexes expriment l'intégralité de l'accord des parties et remplacent tout accord antérieur relatif au même objet. Toute modification fait l'objet d'un avenant écrit et signé par les deux parties.
+
+Le Prestataire tient à la disposition du Client, pendant toute l'exécution des Prestations, les documents justificatifs de la qualification de son personnel. Le Client communique au Prestataire, au plus tard quinze jours avant le démarrage, le calendrier de ses périodes de fermeture.
+
+Article 15 — Livrables et recette
+
+Chaque Livrable fait l'objet d'un procès-verbal de recette signé des deux parties. Les réserves éventuelles sont consignées dans le procès-verbal et levées dans un délai convenu d'un commun accord. Une recette est réputée prononcée sans réserve en l'absence d'observation écrite du Client dans le délai de validation.
+
+Les réunions se tiennent dans les locaux du Client ou par visioconférence, selon un calendrier arrêté en comité. Les échanges entre les parties se font en langue française ; les documents techniques peuvent être rédigés en anglais lorsque leur nature le justifie. Les parties conviennent de se rencontrer régulièrement afin de faire le point sur l'avancement des travaux et d'ajuster, si nécessaire, le calendrier prévisionnel figurant en annexe.
+
+Article 16 — Notifications
+
+Toute notification au titre du présent contrat est faite par lettre recommandée avec accusé de réception ou par courrier électronique avec confirmation. Les notifications sont adressées aux représentants désignés en tête des présentes.
+
+Le Prestataire remet au Client, à chaque étape, un rapport d'avancement détaillant les actions réalisées, les actions en cours et les points d'attention identifiés. Les parties reconnaissent que le présent contrat a été négocié de bonne foi et que chacune d'elles a pu bénéficier des conseils de son choix. Le Client s'engage à faciliter l'accès de ses locaux au personnel du Prestataire, dans le respect de son règlement intérieur et de ses consignes de sécurité. Les parties reconnaissent que le présent contrat a été négocié de bonne foi et que chacune d'elles a pu bénéficier des conseils de son choix.
+
+Article 17 — Résiliation
+
+En cas de manquement grave de l'une des parties à ses obligations, non réparé dans un délai de trente jours après mise en demeure, l'autre partie peut résilier le contrat de plein droit. La résiliation ne fait pas obstacle aux sommes dues au titre des Prestations réalisées jusqu'à la date d'effet de la résiliation.
+
+Article 18 — Droit applicable et juridiction
+
+Le présent contrat est soumis au droit français. Tout litige relatif à sa validité, son interprétation ou son exécution est soumis aux tribunaux compétents de Montpellier, après tentative de règlement amiable.
+
+Annexe 19 — Calendrier et modalités pratiques
+
+Les décisions du comité de pilotage sont consignées dans un relevé de décisions signé par les représentants des deux parties. Si l'une quelconque des stipulations du présent contrat était déclarée nulle, les autres stipulations conserveraient leur plein effet. Les titres des articles sont donnés à titre indicatif et ne sauraient influer sur l'interprétation des stipulations qu'ils précèdent.
+
+Les titres des articles sont donnés à titre indicatif et ne sauraient influer sur l'interprétation des stipulations qu'ils précèdent. Le Prestataire s'engage à respecter les procédures internes du Client qui lui auront été communiquées par écrit. Les parties conviennent de se rencontrer régulièrement afin de faire le point sur l'avancement des travaux et d'ajuster, si nécessaire, le calendrier prévisionnel figurant en annexe. Les annexes au présent contrat en font partie intégrante ; en cas de contradiction entre le corps du contrat et une annexe, le corps du contrat prévaut.
+
+Les parties reconnaissent que le présent contrat a été négocié de bonne foi et que chacune d'elles a pu bénéficier des conseils de son choix. Le Client communique au Prestataire, au plus tard quinze jours avant le démarrage, le calendrier de ses périodes de fermeture. Chaque partie supporte les frais qu'elle engage pour la négociation et la conclusion du présent contrat.
+
+Le Client s'engage à faciliter l'accès de ses locaux au personnel du Prestataire, dans le respect de son règlement intérieur et de ses consignes de sécurité. Les titres des articles sont donnés à titre indicatif et ne sauraient influer sur l'interprétation des stipulations qu'ils précèdent. Les parties s'informent mutuellement de tout changement d'adresse, de représentant ou de coordonnées de contact. Chaque partie supporte les frais qu'elle engage pour la négociation et la conclusion du présent contrat.
+
+Les décisions du comité de pilotage sont consignées dans un relevé de décisions signé par les représentants des deux parties. Les parties s'informent mutuellement de tout changement d'adresse, de représentant ou de coordonnées de contact. Les décisions du comité de pilotage sont consignées dans un relevé de décisions signé par les représentants des deux parties. Les décisions du comité de pilotage sont consignées dans un relevé de décisions signé par les représentants des deux parties.
+
+Les décisions du comité de pilotage sont consignées dans un relevé de décisions signé par les représentants des deux parties. Les titres des articles sont donnés à titre indicatif et ne sauraient influer sur l'interprétation des stipulations qu'ils précèdent. Les échanges entre les parties se font en langue française ; les documents techniques peuvent être rédigés en anglais lorsque leur nature le justifie. Les réunions se tiennent dans les locaux du Client ou par visioconférence, selon un calendrier arrêté en comité. Les réunions se tiennent dans les locaux du Client ou par visioconférence, selon un calendrier arrêté en comité.
+
+Fait à Montpellier, en deux exemplaires.
+Pour le Client, Mardik SAS
+Pour le Prestataire, 0
