@@ -1,26 +1,68 @@
-# Bundle v2 — la nouvelle version. [À COMPLÉTER — chantier 1]
+# Bundle v2 — la nouvelle version. Brique 1 du Chantier 1 (docs/spec-v2-perimetre.md §7.1).
 #
-# Même client LLM que la v1 (app/llm_client.py). Ce qui change, c'est ce
-# bundle. La structure est là ; la stratégie, le schéma de sortie et les
-# paramètres sont à décider — et à justifier en revue de conception.
-#
-# Question : qu'est-ce qui, dans ce fichier, fait qu'une version est une version ?
+# Même client LLM que la v1 (app/llm_client.py). Stratégie map-reduce par clauses, imposée par
+# le dépôt (tests/acceptance/test_chaine.py::test_contrat_v2_long_analyse_sans_troncature,
+# `sections > 1`) — la conception initiale (un seul appel long-contexte) est abandonnée ;
+# voir CONTINUITE.md §D quater du dossier du brief pour la trace de ce changement.
 
 version: v2.0.0
 modele: ${LLM_MODEL}
-strategie: monolithique          # TODO : map_reduce_clauses (voir app/pipeline/)
+strategie: map_reduce_clauses    # un appel par section (app/pipeline/), pas un appel par contrat
 
 prompt: |
-  TODO — le prompt de la v2. Il s'applique à UNE section du contrat (titre +
-  texte), pas au contrat entier. Il doit imposer les libellés de clauses
-  (voir app/llm_client.py::TYPES_CLAUSES) et une sortie JSON.
+  Tu es un assistant juridique. On te donne le TITRE et le TEXTE d'une seule section d'un
+  contrat commercial (pas le contrat entier). Identifie, dans cette section uniquement, les
+  types de clauses présents parmi cette liste fermée : résiliation, pénalité de retard,
+  confidentialité, propriété intellectuelle, limitation de responsabilité, force majeure,
+  durée, prix et paiement, non-concurrence, garantie, données personnelles, droit applicable,
+  exclusivité, reconduction tacite.
+  Pour chaque type trouvé, cite l'extrait exact de la section qui le montre (copie littérale,
+  jamais une paraphrase) et donne ta confiance entre 0 et 1. N'invente jamais un extrait absent
+  du texte fourni. Si aucun type n'est présent dans cette section, réponds avec une liste vide.
+  Réponds uniquement en JSON, sans texte autour, conforme au schéma fourni.
 
 parametres:
-  temperature: 0.2               # TODO : quelle valeur pour un gate stable ?
-  max_tokens: 300
-  seed: null                     # TODO
-  contexte_max_caracteres: 6000  # par section, plus par contrat
-  essais_eval: 1                 # nombre de passes du gate (moyenne)
+  temperature: 0.2               # gate stable ; la séance du 16/09 a perdu 2h sur 0.7 par défaut
+  max_tokens: 500                 # plusieurs clauses + extraits possibles par section
+  seed: 42                        # figé, engagement de reproductibilité ; la variance résiduelle
+                                   # (le fournisseur n'est pas garanti déterministe) est absorbée
+                                   # par essais_eval, pas niée
+  essais_eval: 3                  # moyenne sur 3 passes du gate — cf. Makefile ARGS="--essais 3"
+  contexte_max_caracteres: 6000   # PAR SECTION, valeur provisoire — à confirmer par le gate
+                                   # contre p95/coût sur c07, c10, c12 (spec §3, brique 7)
 
-schema_sortie: null              # TODO : le schéma JSON de la sortie (clauses : type, extrait, confiance)
-cout_par_1k_tokens: 0.002
+schema_sortie:
+  type: object
+  required: [clauses]
+  properties:
+    clauses:
+      type: array
+      items:
+        type: object
+        required: [type, extrait, confiance]
+        properties:
+          type:
+            type: string
+            enum:
+              - résiliation
+              - pénalité de retard
+              - confidentialité
+              - propriété intellectuelle
+              - limitation de responsabilité
+              - force majeure
+              - durée
+              - prix et paiement
+              - non-concurrence
+              - garantie
+              - données personnelles
+              - droit applicable
+              - exclusivité
+              - reconduction tacite
+          extrait:
+            type: string
+          confiance:
+            type: number
+            minimum: 0
+            maximum: 1
+
+cout_par_1k_tokens: 0.002          # même ordre de grandeur que v1 ; à ajuster si le fournisseur diffère
