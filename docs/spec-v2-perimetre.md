@@ -81,10 +81,13 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 
 ## 7. Ordre des briques (chacune : test rouge → code → vert → diff montré)
 
-> ⚠️ Corrigé le 21/09 : la liste d'origine (9 briques) oubliait `app/gateway.py` — deux tests
-> d'acceptance (`test_rollback_en_une_operation`, `test_promotion_canary_puis_totale`) en
-> dépendent (`client.get("/gateway/etat")`, `client.post("/analyse")`), en plus de `ops/deploy.py`.
-> Insérée comme brique 9 ; la chaîne CI passe à la brique 10.
+> ⚠️ Corrigé le 21/09, deux fois : la liste d'origine (9 briques) oubliait `app/gateway.py`
+> (2 tests d'acceptance en dépendent) — insérée comme brique 9. Puis, en clôturant la brique 9,
+> constaté qu'`ops/dashboard.py` n'était non plus listé nulle part, alors qu'un test d'acceptance
+> (`test_dashboard_par_version`) en dépend directement. Insérée comme brique 10 ; la chaîne CI
+> passe à la brique 11. Les deux oublis ont la même cause : la liste d'origine a été faite en
+> lisant les 5 puces du brief, pas l'arborescence réelle du dépôt (section « Les chantiers » du
+> README) — elle ne nommait que les fichiers alors « gros », pas les 2 petits stubs restants.
 
 1. `models/v2/config.yaml` — le bundle v2 : stratégie, prompt par section, schéma JSON de sortie, température, `seed`, `essais_eval`. ✅
 2. `app/pipeline/decoupage.py` — `decouper` : rien ne se perd, aucune phrase coupée. ✅
@@ -95,8 +98,9 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 7. `eval/run_eval.py` — le gate : rappel + précision, p95, coût, `history.jsonl`, code de sortie. ✅
 8. `ops/deploy.py` — `publier` (refuse si le gate est rouge), `deployer_canary`, `promouvoir`, `rollback`, `surveiller`
    (alerte seule, **jamais** de rollback automatique — décision du formateur, 21/09, `CONTINUITE.md` §D quater). ✅
-9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2).
-10. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant.
+9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2). ✅
+10. `ops/dashboard.py` — `resume` (agrégats par version), `rendre_texte`, `rendre_html`.
+11. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant.
 
 ## 📖 Glossaire
 
