@@ -26,6 +26,7 @@ Contrat attendu :
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import sys
 from typing import Any
@@ -103,17 +104,24 @@ def rendre_texte(r: dict[str, Any]) -> str:
 
 
 def rendre_html(r: dict[str, Any]) -> str:
+    # Les valeurs numériques (requetes, trafic_pct, latences, taux_erreur, score) sont
+    # produites par des f-strings avec spécificateur de format (":.1f", ":.0f", ":.1%") :
+    # leur sortie est garantie numérique, pas besoin d'échapper. "version" et les champs du
+    # journal sont des chaînes d'origine externe au calcul (config du bundle, événements) :
+    # échappées explicitement, même si rien d'injectable n'y transite aujourd'hui.
     def _ligne(version: str, v: dict[str, Any]) -> str:
         score = "—" if v["score_moyen"] is None else f"{v['score_moyen']:.2f}"
         return (
-            f"<tr><td>{version}</td><td>{v['requetes']}</td><td>{v['trafic_pct']:.1f}&nbsp;%</td>"
+            f"<tr><td>{html.escape(version)}</td><td>{v['requetes']}</td>"
+            f"<td>{v['trafic_pct']:.1f}&nbsp;%</td>"
             f"<td>{v['latence_p50_ms']:.0f}&nbsp;ms</td><td>{v['latence_p95_ms']:.0f}&nbsp;ms</td>"
             f"<td>{v['taux_erreur']:.1%}</td><td>{score}</td></tr>"
         )
 
     lignes_versions = "".join(_ligne(version, v) for version, v in r["par_version"].items())
     lignes_journal = "".join(
-        f"<li>{e.get('date', '?')} — {e.get('evenement', '?')}</li>" for e in r["journal"]
+        f"<li>{html.escape(str(e.get('date', '?')))} — {html.escape(str(e.get('evenement', '?')))}</li>"
+        for e in r["journal"]
     )
     return f"""<!DOCTYPE html>
 <html lang="fr">
