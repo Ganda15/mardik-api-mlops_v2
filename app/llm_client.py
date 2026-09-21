@@ -232,7 +232,10 @@ class LLMClient:
                         "model": self.bundle.modele,
                         "messages": messages,
                         "temperature": params.get("temperature", 0.0),
-                        "max_tokens": params.get("max_tokens", 1024),
+                        # "max_tokens" est refusé par les modèles récents (ex. gpt-5.4,
+                        # famille o1/o3) : "Use 'max_completion_tokens' instead" (400 mesuré
+                        # le 21/09 sur la vraie ressource Azure) ; nom moderne, rétro-compatible.
+                        "max_completion_tokens": params.get("max_tokens", 1024),
                     }
                     if params.get("seed") is not None:
                         body["seed"] = params["seed"]
