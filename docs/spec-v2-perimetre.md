@@ -109,15 +109,30 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 `ruff check` propre. Reste hors de cette liste : `docs/exploitation.md` (runbook, 7 sections, vide) et le frontend
 (livrable N12, jamais décidé).
 
-**La question de §3 (« taille de section ») est mesurée, le 21/09, sur le vrai modèle (`llama3.2:3b`, Ollama, CPU 4 threads,
-pas de GPU), contrat c01 (2 pages, 10 537 caractères) — traces Jaeger dans le dossier du brief (`preuves/`) :**
-- en série : **18 sections, 404,7 s** (22,7 s par appel en moyenne) ; en parallèle par 4 : **503 après 127 s**, Ollama sert une
-  requête à la fois et les appels en attente dépassent `LLM_TIMEOUT_S=60` ;
-- **le budget 8 s / 0,15 € n'est pas atteignable sur cette machine**, quel que soit l'ordre des appels : ~400 s de calcul par
-  contrat. Il se mesure chez le fournisseur hébergé du client (`LLM_PROVIDER=azure`), pas en local ;
-- le levier réel est le **nombre d'appels** : le découpage est par article, et c01 a 18 articles de 215 à 980 caractères.
-  Regrouper les articles voisins jusqu'à `taille_max` donnerait ~2 sections (c01), ~11 (c07), ~12 (c10), ~14 (c12) — décision
-  ouverte, elle modifie la brique 2 et le prompt (« une seule section »).
+**La question de §3 (« taille de section »), mesurée deux fois le 21/09 — sur deux fournisseurs différents :**
+
+*D'abord sur `llama3.2:3b` (Ollama local, CPU 4 threads, pas de GPU), contrat c01 (2 p., 10 537 car.)* : en série, 18 sections,
+404,7 s ; en parallèle par 4, 503 après 127 s (Ollama sert une requête à la fois, `OLLAMA_NUM_PARALLEL:1`, les appels en attente
+dépassent `LLM_TIMEOUT_S=60`). **Mais Ollama local n'est que l'option gratuite du dépôt** (`.env.example:3`) — l'architecture
+réelle du brief est « API LLM externe... hébergée sur Azure » (`Mardik-BRIEF-original.md:151-152`). Ce résultat ne répond donc
+pas à la question sur la vraie cible.
+
+*Ensuite sur Azure (déploiement `gpt-5.4`, la vraie architecture du brief), `parallelisme` porté à la taille du contrat* — sur
+les 3 contrats que ce §3 nomme explicitement :
+
+| Contrat | Sections | Durée | Coût |
+|---|---|---|---|
+| c01 (le plus court, hors cible §3) | 18 | 4,1 – 7,1 s | 0,020 € |
+| **c07** | 26 | **5,9 s** | **0,049 €** |
+| **c10** | 27 | **4,8 s** | **0,053 €** |
+| **c12** | 31 | **5,1 s** | **0,062 €** |
+
+**Sur la vraie architecture du brief, les 3 contrats de référence tiennent les deux budgets, confortablement.** Jaeger confirme
+un vrai parallélisme côté fournisseur (4+ appels simultanés, Azure ne fait pas la queue comme Ollama). Deux bugs réels trouvés
+et corrigés en testant contre le vrai modèle (`max_tokens` → `max_completion_tokens` pour `gpt-5.4` ; le paramètre
+`api-version` cassait la surface Azure unifiée `.../openai/v1`) — détail et commits dans `ETAT.md` du dossier du brief.
+Point ouvert, non mesuré sous charge réelle : le risque de quota/rate-limit Azure avec plusieurs requêtes simultanées envoyant
+chacune 20-30 appels parallèles — `parallelisme: 4` reste la valeur par défaut du bundle tant que ce n'est pas tranché.
 
 ## 📖 Glossaire
 
