@@ -138,13 +138,24 @@ _defaut: Telemetry | None = None
 
 
 def build_default_telemetry() -> Telemetry:
-    """Télémétrie de production : exporte les spans sur la console (JSON),
-    et les métriques dans ``ops/metrics.jsonl``."""
+    """Télémétrie de production : exporte les spans sur la console (JSON), vers un
+    collecteur OTLP (``OTEL_TRACES=otlp``, ex. Jaeger — conception Chantier 2 §7), ou
+    nulle part (``off``) ; et les métriques dans ``ops/metrics.jsonl``."""
     global _defaut
     if _defaut is None:
         exporter: SpanExporter
-        if os.environ.get("OTEL_TRACES", "console").lower() == "off":
+        mode = os.environ.get("OTEL_TRACES", "console").lower()
+        if mode == "off":
             exporter = NoopSpanExporter()
+        elif mode == "otlp":
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+                OTLPSpanExporter,
+            )
+
+            endpoint = os.environ.get(
+                "OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318/v1/traces"
+            )
+            exporter = OTLPSpanExporter(endpoint=endpoint)
         else:
             exporter = ConsoleSpanExporter()
         _defaut = build_telemetry(
