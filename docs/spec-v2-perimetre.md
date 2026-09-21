@@ -101,11 +101,23 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2). ✅
 10. `ops/dashboard.py` — `resume` (agrégats par version), `rendre_texte`, `rendre_html`.
 11. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant. ✅
+12. `app/api_v2.py` — sections analysées en parallèle (`parallelisme` du bundle, pool borné, ordre conservé, spans imbriqués). ✅
+    Ajoutée le 21/09 après la mesure réelle ci-dessous ; **juste chez un fournisseur qui sert plusieurs requêtes à la fois, sans
+    effet (et même nuisible : 503) sur un Ollama local à `OLLAMA_NUM_PARALLEL=1`**.
 
-**Les 11 briques sont faites.** `chantier1/dev` : 15 commits, 48 tests, 10/10 tests d'acceptance du brief verts,
-`ruff check` propre. Reste hors de cette liste : `docs/exploitation.md` (runbook, 7 sections, vide), le frontend
-(livrable N12, jamais décidé), et la mesure réelle (`MOCK=off`) de `contexte_max_caracteres` contre le budget
-8 s / 0,15 € — ouverte depuis la brique 1, jamais fermée, parce que tout ce dossier a tourné en `MOCK=on`.
+**Les 12 briques sont faites.** `chantier1/dev` : 19 commits, 50 tests, 10/10 tests d'acceptance du brief verts,
+`ruff check` propre. Reste hors de cette liste : `docs/exploitation.md` (runbook, 7 sections, vide) et le frontend
+(livrable N12, jamais décidé).
+
+**La question de §3 (« taille de section ») est mesurée, le 21/09, sur le vrai modèle (`llama3.2:3b`, Ollama, CPU 4 threads,
+pas de GPU), contrat c01 (2 pages, 10 537 caractères) — traces Jaeger dans le dossier du brief (`preuves/`) :**
+- en série : **18 sections, 404,7 s** (22,7 s par appel en moyenne) ; en parallèle par 4 : **503 après 127 s**, Ollama sert une
+  requête à la fois et les appels en attente dépassent `LLM_TIMEOUT_S=60` ;
+- **le budget 8 s / 0,15 € n'est pas atteignable sur cette machine**, quel que soit l'ordre des appels : ~400 s de calcul par
+  contrat. Il se mesure chez le fournisseur hébergé du client (`LLM_PROVIDER=azure`), pas en local ;
+- le levier réel est le **nombre d'appels** : le découpage est par article, et c01 a 18 articles de 215 à 980 caractères.
+  Regrouper les articles voisins jusqu'à `taille_max` donnerait ~2 sections (c01), ~11 (c07), ~12 (c10), ~14 (c12) — décision
+  ouverte, elle modifie la brique 2 et le prompt (« une seule section »).
 
 ## 📖 Glossaire
 
