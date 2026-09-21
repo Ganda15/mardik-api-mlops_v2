@@ -1,9 +1,24 @@
-# Chaîne LLMOps — squelette [TEMPLATE].
+# Chaîne LLMOps — brique 11 (dernière).
 #
-# Les étapes sont posées dans l'ordre ; les gates marqués TODO sont à
-# compléter par les apprenants. Tout tourne avec MOCK=on : la CI ne doit ni
-# payer ni dépendre du fournisseur. Seul le gate « de release » (déclenché à
-# la main ou sur tag) a vocation à appeler le vrai modèle.
+# UN pipeline, pas deux — proposition de Steve, endossée par le formateur en classe le
+# 18/09 (« pourquoi tu n'as pas pensé à ça plus tôt ») : agent et logiciel restent dans
+# le même code, il n'y a pas deux composants déployables. Job 1 (tests, gratuit,
+# MOCK=on) tourne à chaque push. Job 2 (le gate d'évaluation, payant) est filtré par
+# chemin sur une PR (dorny/paths-filter@v3 — l'outil nommé par le formateur en classe) :
+# seulement si models/v2/config.yaml, prompts/, le code du pipeline, ou le jeu de
+# référence changent. À la fusion sur main, job 2 tourne SYSTÉMATIQUEMENT, sans
+# condition : le code réellement fusionné peut différer de celui vu sur la PR
+# (docs/spec-v2-perimetre.md §4.3, CONTINUITE.md §D ter).
+#
+# Pas de staging (Ch1 §3.4) : le canary sur trafic réel en tient lieu.
+# surveiller() n'apparaît jamais ici : c'est un processus continu, pas une étape CI —
+# juste après un déploiement canary, il n'y a encore aucun trafic à mesurer.
+#
+# Tout tourne avec MOCK=on : la CI ne doit ni payer ni dépendre du fournisseur. C'est
+# une preuve de la MÉCANIQUE du gate (rappel, seuils, p95/coût calculés), pas des vrais
+# chiffres — le vrai gate se joue en local (`make eval VERSION=v2`) avant de fusionner,
+# avec le vrai modèle. Question encore ouverte (depuis la brique 1, non résolue ici) :
+# contexte_max_caracteres (6000) tient-il le budget réel 8 s / 0,15 € ?
 #
 # Équivalent local : `make ci`.
 
@@ -15,6 +30,11 @@ on:
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Forcer la version publiée (sinon auto-calculée)"
+        required: false
+        default: ""
 
 env:
   MOCK: "on"
@@ -44,11 +64,104 @@ jobs:
       - run: uv sync
       - name: Tests d'intégration (hérités de la remédiation)
         run: uv run pytest -q tests/integration
-      - name: Tests d'acceptance (le brief)
-        run: uv run pytest -q tests/acceptance
+      - name: Tests d'acceptance (le brief) + nos tests unitaires par brique
+        run: uv run pytest -q
+
+  filtre-chemins:
+    needs: tests
+    runs-on: ubuntu-latest
+    outputs:
+      gate: ${{ steps.filtre.outputs.gate }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filtre
+        with:
+          filters: |
+            gate:
+              - 'models/v2/config.yaml'
+              - 'prompts/**'
+              - 'app/pipeline/**'
+              - 'eval/attendus.jsonl'
+              - 'eval/thresholds.yml'
 
   gate-evaluation:
-    needs: tests
+    needs: [tests, filtre-chemins]
+    # PR : seulement si le filtre de chemin a matché. Push (fusion sur main, ou tag) :
+    # toujours, sans condition — le code fusionné peut différer de celui de la PR.
+    if: github.event_name != 'pull_request' || needs.filtre-chemins.outputs.gate == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      note: ${{ steps.gate.outputs.note }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # historique complet : ops.registry.versions() doit voir tous les tags
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.11"
+      - run: uv sync
+      - name: Gate d'évaluation (MOCK=on en CI — mécanique du gate, pas les vrais chiffres)
+        id: gate
+        run: uv run python -m eval.run_eval --version v2 --seuil 0.75
+      - name: Prochaine version (MINOR si le filtre de chemin a matché, sinon PATCH)
+        id: version
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(uv run python -c "
+          from ops.registry import Registry
+          reg = Registry()
+          # v1 reste taguée pour toujours (jamais republiée) : ne bumper que sur la
+          # ligne v2.x.x, sinon la 1re publication v2 calculerait un numéro depuis v1.0.0.
+          v2_versions = [v for v in reg.versions() if v.startswith('v2.')]
+          bump_minor = '${{ needs.filtre-chemins.outputs.gate }}' == 'true'
+          if not v2_versions:
+              print('v2.0.0')
+          else:
+              major, minor, patch = v2_versions[-1].lstrip('v').split('.')
+              print(f'v{major}.{int(minor)+1}.0' if bump_minor else f'v{major}.{minor}.{int(patch)+1}')
+          ")
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Publier le rapport du gate en artefact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-report-${{ github.sha }}
+          path: eval/history.jsonl
+
+  build:
+    needs: gate-evaluation
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image de l'application (taguée avec la version calculée)
+        run: docker build -t mardik:${{ needs.gate-evaluation.outputs.version }} .
+
+  publication:
+    needs: [gate-evaluation, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v3
+        with:
+          python-version: "3.11"
+      - run: uv sync
+      - name: Étiqueter la version dans le registre — REFUSE si le gate a échoué
+        run: |
+          uv run python -m ops.deploy publier \
+            ${{ needs.gate-evaluation.outputs.version }} \
+            --bundle v2 --seuil 0.75
+
+  deploiement-canary:
+    needs: [gate-evaluation, publication]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,35 +169,10 @@ jobs:
         with:
           python-version: "3.11"
       - run: uv sync
-      # TODO gate d'évaluation : exécuter `python -m eval.run_eval --version v2 --seuil 0.75`
-      #      (MOCK=on ici ; décider ce que la CI peut vérifier sans le vrai modèle),
-      #      publier eval/history.jsonl en artefact de build, échouer si le gate échoue.
-      - run: echo "TODO gate d'évaluation"
-
-  build:
-    needs: gate-evaluation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Image de l'application
-        run: docker build -t mardik:${{ github.sha }} .
-
-  publication:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      # TODO publication artefact : étiqueter la version (vX.Y.Z) dans ops/registry
-      #      via `python -m ops.deploy publier vX.Y.Z` avec le commit et la note du gate,
-      #      et conserver le dossier de version en artefact de build.
-      - run: echo "TODO publication artefact"
-
-  deploiement-canary:
-    needs: publication
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - uses: actions/checkout@v4
-      # TODO déploiement canary : `python -m ops.deploy canary vX.Y.Z --pourcentage 10`,
-      #      puis surveillance (`python -m ops.deploy surveiller`) et promotion ou rollback.
-      - run: echo "TODO déploiement canary"
+      - name: Canary à 10 % — la promotion et le rollback restent hors CI
+        run: |
+          uv run python -m ops.deploy canary ${{ needs.gate-evaluation.outputs.version }} --pourcentage 10
+      # La promotion (au vu des métriques réelles) et le rollback (décision humaine,
+      # jamais automatique — CONTINUITE.md §D quater) se font depuis le tableau de bord
+      # ou en CLI, pas depuis cette chaîne : la surveillance est un processus continu
+      # sur du trafic réel, que la CI n'a pas au moment du déploiement.
