@@ -100,7 +100,12 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
    (alerte seule, **jamais** de rollback automatique — décision du formateur, 21/09, `CONTINUITE.md` §D quater). ✅
 9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2). ✅
 10. `ops/dashboard.py` — `resume` (agrégats par version), `rendre_texte`, `rendre_html`.
-11. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant.
+11. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant. ✅
+
+**Les 11 briques sont faites.** `chantier1/dev` : 15 commits, 48 tests, 10/10 tests d'acceptance du brief verts,
+`ruff check` propre. Reste hors de cette liste : `docs/exploitation.md` (runbook, 7 sections, vide), le frontend
+(livrable N12, jamais décidé), et la mesure réelle (`MOCK=off`) de `contexte_max_caracteres` contre le budget
+8 s / 0,15 € — ouverte depuis la brique 1, jamais fermée, parce que tout ce dossier a tourné en `MOCK=on`.
 
 ## 📖 Glossaire
 
