@@ -81,15 +81,22 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 
 ## 7. Ordre des briques (chacune : test rouge → code → vert → diff montré)
 
-1. `models/v2/config.yaml` — le bundle v2 : stratégie, prompt par section, schéma JSON de sortie, température, `seed`, `essais_eval`.
-2. `app/pipeline/decoupage.py` — `decouper` : rien ne se perd, aucune phrase coupée.
-3. `app/pipeline/extraction.py` — `extraire` : un appel par section, JSON contraint, clause fautive ignorée et signalée.
-4. `app/pipeline/consolidation.py` — `consolider` : un type = une clause, extrait le plus long, sections fusionnées.
-5. `app/pipeline/confiance.py` — `scorer` : composite (déclaré × extrait vérifié × multi-sections), global.
-6. `app/api_v2.py` — `analyser_v2` + la route, télémétrie, 503 explicite.
-7. `eval/run_eval.py` — le gate : rappel + précision, p95, coût, `history.jsonl`, code de sortie.
-8. `ops/deploy.py::publier` — refuse si le gate est rouge, étiquette sinon.
-9. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant.
+> ⚠️ Corrigé le 21/09 : la liste d'origine (9 briques) oubliait `app/gateway.py` — deux tests
+> d'acceptance (`test_rollback_en_une_operation`, `test_promotion_canary_puis_totale`) en
+> dépendent (`client.get("/gateway/etat")`, `client.post("/analyse")`), en plus de `ops/deploy.py`.
+> Insérée comme brique 9 ; la chaîne CI passe à la brique 10.
+
+1. `models/v2/config.yaml` — le bundle v2 : stratégie, prompt par section, schéma JSON de sortie, température, `seed`, `essais_eval`. ✅
+2. `app/pipeline/decoupage.py` — `decouper` : rien ne se perd, aucune phrase coupée. ✅
+3. `app/pipeline/extraction.py` — `extraire` : un appel par section, JSON contraint, clause fautive ignorée et signalée. ✅
+4. `app/pipeline/consolidation.py` — `consolider` : un type = une clause, extrait le plus long, sections fusionnées. ✅
+5. `app/pipeline/confiance.py` — `scorer` : composite (déclaré × extrait vérifié × multi-sections), global. ✅
+6. `app/api_v2.py` — `analyser_v2` + la route, télémétrie, 503 explicite. ✅
+7. `eval/run_eval.py` — le gate : rappel + précision, p95, coût, `history.jsonl`, code de sortie. ✅
+8. `ops/deploy.py` — `publier` (refuse si le gate est rouge), `deployer_canary`, `promouvoir`, `rollback`, `surveiller`
+   (alerte seule, **jamais** de rollback automatique — décision du formateur, 21/09, `CONTINUITE.md` §D quater). ✅
+9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2).
+10. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant.
 
 ## 📖 Glossaire
 
