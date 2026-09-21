@@ -30,6 +30,9 @@ parametres:
   essais_eval: 3                  # moyenne sur 3 passes du gate — cf. Makefile ARGS="--essais 3"
   contexte_max_caracteres: 6000   # PAR SECTION, valeur provisoire — à confirmer par le gate
                                    # contre p95/coût sur c07, c10, c12 (spec §3, brique 7)
+  parallelisme: 4                 # appels de section simultanés (brique 12). En série : 18
+                                   # sections × 22,7 s = ~6 min mesurées le 21/09 (Jaeger).
+                                   # Ollama local sérialise si OLLAMA_NUM_PARALLEL=1 : à mesurer
 
 schema_sortie:
   type: object

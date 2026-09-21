@@ -25,11 +25,16 @@ Règles :
   toute l'analyse — ce n'est pas la même chose qu'une clause individuelle mal formée dans
   une réponse par ailleurs valide (celle-là, ``extraire()`` l'ignore déjà, brique 3) ;
 * chaque requête produit une ``Mesure`` (version, latence, score, coût, appels LLM, erreur)
-  et des spans ``analyse.requete`` → ``llm.appel`` (un par section), comme la v1.
+  et des spans ``analyse.requete`` → ``llm.appel`` (un par section), comme la v1 ;
+* les sections sont indépendantes : elles sont analysées **en parallèle** (``parallelisme``
+  du bundle, 4 par défaut), l'ordre des résultats est conservé (brique 12 — constat Jaeger
+  du 21/09 : en série, 18 sections × 22,7 s = ~6 min par contrat, pour 8 s exigées).
 """
 from __future__ import annotations
 
+import contextvars
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -37,7 +42,7 @@ from pydantic import BaseModel, Field
 from app.llm_client import Bundle, ErreurLLM, LLMClient
 from app.pipeline.confiance import Clause, scorer
 from app.pipeline.consolidation import consolider
-from app.pipeline.decoupage import decouper
+from app.pipeline.decoupage import Section, decouper
 from app.pipeline.extraction import extraire
 from app.telemetry import Mesure, Telemetry, build_default_telemetry
 
@@ -90,16 +95,22 @@ def analyser_v2(texte: str, client: LLMClient, telemetry: Telemetry) -> ReponseA
         sections = decouper(texte, taille_max=taille_max)
         span.set_attribute("mardik.sections", len(sections))
 
-        par_section: list[list[Clause]] = []
-        cout_total = 0.0
+        parallelisme = max(1, int(bundle.parametres.get("parallelisme", 4)))
+
+        def _traiter(section: Section) -> tuple[list[Clause], float]:
+            with telemetry.tracer.start_as_current_span("llm.appel") as span_llm:
+                span_llm.set_attribute("mardik.section", section.indice)
+                clauses, reponse_llm = extraire(section, client)
+                span_llm.set_attribute("llm.latence_ms", reponse_llm.latence_ms)
+                span_llm.set_attribute("llm.tokens", reponse_llm.tokens)
+            return clauses, client.cout_eur(reponse_llm)
+
+        # Un contexte copié PAR tâche (un même Context ne peut pas être entré par deux
+        # threads) : analyse.requete reste le parent de chaque llm.appel dans la trace.
+        taches = [(contextvars.copy_context(), s) for s in sections]
+        executor = ThreadPoolExecutor(max_workers=min(parallelisme, max(1, len(sections))))
         try:
-            for section in sections:
-                with telemetry.tracer.start_as_current_span("llm.appel") as span_llm:
-                    clauses, reponse_llm = extraire(section, client)
-                    span_llm.set_attribute("llm.latence_ms", reponse_llm.latence_ms)
-                    span_llm.set_attribute("llm.tokens", reponse_llm.tokens)
-                cout_total += client.cout_eur(reponse_llm)
-                par_section.append(clauses)
+            resultats = list(executor.map(lambda t: t[0].run(_traiter, t[1]), taches))
         except ErreurLLM as exc:
             latence = (time.perf_counter() - debut) * 1000
             telemetry.metriques.enregistrer(
@@ -113,6 +124,12 @@ def analyser_v2(texte: str, client: LLMClient, telemetry: Telemetry) -> ReponseA
             )
             telemetry.logger.error("analyse.echec", version=bundle.version, cause=str(exc))
             raise
+        finally:
+            # cancel_futures : une panne sur la section 2 n'appelle (ne paie) pas les suivantes
+            executor.shutdown(wait=True, cancel_futures=True)
+
+        par_section = [clauses for clauses, _ in resultats]
+        cout_total = sum(cout for _, cout in resultats)
 
         clauses_consolidees = consolider(par_section)
         clauses_notees, confiance_globale = scorer(clauses_consolidees, texte)
