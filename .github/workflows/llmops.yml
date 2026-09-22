@@ -20,6 +20,12 @@
 # avec le vrai modèle. Question encore ouverte (depuis la brique 1, non résolue ici) :
 # contexte_max_caracteres (6000) tient-il le budget réel 8 s / 0,15 € ?
 #
+# Ce qui persiste après un run (22/09, avant le premier run réel — sans ça la chaîne
+# était verte mais invisible après coup) : le tag git vX.Y.Z (source de vérité des
+# versions : ops/registry/v2*/ est ignoré par git et n'existe jamais sur un runner
+# neuf), l'image sur GHCR, et le registre (manifeste + index) en artefact de build,
+# transmis du job publication au job canary — chaque job tourne sur un runner vierge.
+#
 # Équivalent local : `make ci`.
 
 name: llmops
@@ -41,6 +47,16 @@ env:
   DRIFT: "off"
   LLM_PROVIDER: ollama
   LLM_MODEL: modele-ci
+
+# Lecture seule par défaut ; seuls publication (tag) et build (GHCR) élèvent leurs droits.
+permissions:
+  contents: read
+
+# Deux fusions rapprochées ne doivent pas calculer la même version : une seule chaîne
+# à la fois par branche, sans annuler celle en cours.
+concurrency:
+  group: llmops-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   lint:
@@ -109,21 +125,26 @@ jobs:
         id: version
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          if [ -z "$VERSION" ]; then
-            VERSION=$(uv run python -c "
-          from ops.registry import Registry
-          reg = Registry()
-          # v1 reste taguée pour toujours (jamais republiée) : ne bumper que sur la
-          # ligne v2.x.x, sinon la 1re publication v2 calculerait un numéro depuis v1.0.0.
-          v2_versions = [v for v in reg.versions() if v.startswith('v2.')]
-          bump_minor = '${{ needs.filtre-chemins.outputs.gate }}' == 'true'
-          if not v2_versions:
-              print('v2.0.0')
-          else:
-              major, minor, patch = v2_versions[-1].lstrip('v').split('.')
-              print(f'v{major}.{int(minor)+1}.0' if bump_minor else f'v{major}.{minor}.{int(patch)+1}')
-          ")
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            VERSION="${{ github.ref_name }}"   # un tag poussé à la main désigne sa propre version
           fi
+          if [ -z "$VERSION" ]; then
+            # Source de vérité : les tags git (d'où fetch-depth: 0), jamais les dossiers du
+            # registre — ignorés par git, absents d'un runner neuf. v1 reste taguée pour
+            # toujours : on ne bumpe que sur la ligne v2.x.x.
+            DERNIERE=$(git tag -l 'v2.*' --sort=-v:refname | head -n 1)
+            if [ -z "$DERNIERE" ]; then
+              VERSION=v2.0.0
+            else
+              IFS=. read -r MAJOR MINOR PATCH <<< "${DERNIERE#v}"
+              if [ "${{ needs.filtre-chemins.outputs.gate }}" = "true" ]; then
+                VERSION="v${MAJOR}.$((MINOR + 1)).0"
+              else
+                VERSION="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+              fi
+            fi
+          fi
+          echo "version calculée : $VERSION (dernier tag v2 : ${DERNIERE:-aucun})"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Publier le rapport du gate en artefact
         if: always()
@@ -136,15 +157,34 @@ jobs:
     needs: gate-evaluation
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      VERSION: ${{ needs.gate-evaluation.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-      - name: Image de l'application (taguée avec la version calculée)
-        run: docker build -t mardik:${{ needs.gate-evaluation.outputs.version }} .
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image de l'application, taguée avec la version calculée, poussée sur GHCR
+        run: |
+          # GHCR exige un nom en minuscules ; l'owner GitHub (Ganda15) ne l'est pas.
+          IMAGE="ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          docker build -t "$IMAGE:$VERSION" .
+          docker push "$IMAGE:$VERSION"
+          echo "image publiée : $IMAGE:$VERSION"
 
   publication:
     needs: [gate-evaluation, build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # pour pousser le tag
+    env:
+      VERSION: ${{ needs.gate-evaluation.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -154,24 +194,49 @@ jobs:
           python-version: "3.11"
       - run: uv sync
       - name: Étiqueter la version dans le registre — REFUSE si le gate a échoué
+        run: uv run python -m ops.deploy publier "$VERSION" --bundle v2 --seuil 0.75
+      - name: Tag git — immuable (git refuse d'écraser un tag existant sans -f)
         run: |
-          uv run python -m ops.deploy publier \
-            ${{ needs.gate-evaluation.outputs.version }} \
-            --bundle v2 --seuil 0.75
+          git config user.name "llmops[bot]"
+          git config user.email "llmops@users.noreply.github.com"
+          git tag -a "$VERSION" -m "Publié par llmops.yml : gate vert, commit ${GITHUB_SHA::7}"
+          git push origin "refs/tags/$VERSION"
+      - name: Registre publié en artefact (manifeste + index), transmis au job canary
+        uses: actions/upload-artifact@v4
+        with:
+          name: registry-${{ needs.gate-evaluation.outputs.version }}
+          path: ops/registry/
+          if-no-files-found: error
 
   deploiement-canary:
     needs: [gate-evaluation, publication]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.gate-evaluation.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
         with:
           python-version: "3.11"
       - run: uv sync
+      # Runner vierge : sans le registre du job publication, definir_canary() refuserait
+      # (« version inconnue du registre »). Constaté à la relecture du 22/09, jamais couru.
+      - name: Registre tel que publié
+        uses: actions/download-artifact@v4
+        with:
+          name: registry-${{ needs.gate-evaluation.outputs.version }}
+          path: ops/registry/
       - name: Canary à 10 % — la promotion et le rollback restent hors CI
         run: |
-          uv run python -m ops.deploy canary ${{ needs.gate-evaluation.outputs.version }} --pourcentage 10
+          uv run python -m ops.deploy canary "$VERSION" --pourcentage 10
+          cat ops/registry/index.json
+      - name: Registre après canary (l'index dit qui sert quel trafic)
+        uses: actions/upload-artifact@v4
+        with:
+          name: registry-${{ needs.gate-evaluation.outputs.version }}-canary
+          path: ops/registry/
+          if-no-files-found: error
       # La promotion (au vu des métriques réelles) et le rollback (décision humaine,
       # jamais automatique — CONTINUITE.md §D quater) se font depuis le tableau de bord
       # ou en CLI, pas depuis cette chaîne : la surveillance est un processus continu
