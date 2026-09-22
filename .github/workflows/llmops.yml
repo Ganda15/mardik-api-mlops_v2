@@ -4,7 +4,7 @@
 # 18/09 (« pourquoi tu n'as pas pensé à ça plus tôt ») : agent et logiciel restent dans
 # le même code, il n'y a pas deux composants déployables. Job 1 (tests, gratuit,
 # MOCK=on) tourne à chaque push. Job 2 (le gate d'évaluation, payant) est filtré par
-# chemin sur une PR (dorny/paths-filter@v3 — l'outil nommé par le formateur en classe) :
+# chemin sur une PR (dorny/paths-filter@v4 — l'outil nommé par le formateur en classe) :
 # seulement si models/v2/config.yaml, prompts/, le code du pipeline, ou le jeu de
 # référence changent. À la fusion sur main, job 2 tourne SYSTÉMATIQUEMENT, sans
 # condition : le code réellement fusionné peut différer de celui vu sur la PR
@@ -62,8 +62,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
         with:
           python-version: "3.11"
       - run: uv sync
@@ -73,8 +73,8 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
         with:
           python-version: "3.11"
       - run: uv sync
@@ -89,8 +89,8 @@ jobs:
     outputs:
       gate: ${{ steps.filtre.outputs.gate }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
         id: filtre
         with:
           filters: |
@@ -111,10 +111,10 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       note: ${{ steps.gate.outputs.note }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # historique complet : ops.registry.versions() doit voir tous les tags
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v10
         with:
           python-version: "3.11"
       - run: uv sync
@@ -148,7 +148,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Publier le rapport du gate en artefact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gate-report-${{ github.sha }}
           path: eval/history.jsonl
@@ -163,8 +163,8 @@ jobs:
     env:
       VERSION: ${{ needs.gate-evaluation.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v7
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -186,10 +186,10 @@ jobs:
     env:
       VERSION: ${{ needs.gate-evaluation.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v10
         with:
           python-version: "3.11"
       - run: uv sync
@@ -202,7 +202,7 @@ jobs:
           git tag -a "$VERSION" -m "Publié par llmops.yml : gate vert, commit ${GITHUB_SHA::7}"
           git push origin "refs/tags/$VERSION"
       - name: Registre publié en artefact (manifeste + index), transmis au job canary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: registry-${{ needs.gate-evaluation.outputs.version }}
           path: ops/registry/
@@ -215,15 +215,15 @@ jobs:
     env:
       VERSION: ${{ needs.gate-evaluation.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
         with:
           python-version: "3.11"
       - run: uv sync
       # Runner vierge : sans le registre du job publication, definir_canary() refuserait
       # (« version inconnue du registre »). Constaté à la relecture du 22/09, jamais couru.
       - name: Registre tel que publié
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: registry-${{ needs.gate-evaluation.outputs.version }}
           path: ops/registry/
@@ -232,7 +232,7 @@ jobs:
           uv run python -m ops.deploy canary "$VERSION" --pourcentage 10
           cat ops/registry/index.json
       - name: Registre après canary (l'index dit qui sert quel trafic)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: registry-${{ needs.gate-evaluation.outputs.version }}-canary
           path: ops/registry/
