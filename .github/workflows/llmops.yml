@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           python-version: "3.11"
       - run: uv sync
@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           python-version: "3.11"
       - run: uv sync
@@ -114,7 +114,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # historique complet : ops.registry.versions() doit voir tous les tags
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           python-version: "3.11"
       - run: uv sync
@@ -189,7 +189,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           python-version: "3.11"
       - run: uv sync
@@ -216,7 +216,7 @@ jobs:
       VERSION: ${{ needs.gate-evaluation.outputs.version }}
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.2.0
         with:
           python-version: "3.11"
       - run: uv sync
