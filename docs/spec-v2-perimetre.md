@@ -64,6 +64,7 @@ Les cinq tests fournis dans `tests/acceptance/test_chaine.py`, rouges au départ
 
 Deux critères ajoutés par la conception, sans test fourni — à écrire :
 - **A1** : le rapport du gate contient la **précision** à côté du rappel (un modèle qui annonce les 14 types ne doit pas passer inaperçu).
+  ✅ Écrit le 22/09 (`tests/test_run_eval.py`, 3 tests) — mesuré sur le vrai modèle : 0,950.
 - **A2** : le gate de release tourne sur le **vrai modèle** au moins une fois avant tout étiquetage ; en CI (`MOCK=on`) sans fixtures
   enregistrées, le vert prouve la plomberie, pas le modèle — dit tel quel dans le runbook.
 
@@ -95,9 +96,9 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 4. `app/pipeline/consolidation.py` — `consolider` : un type = une clause, extrait le plus long, sections fusionnées. ✅
 5. `app/pipeline/confiance.py` — `scorer` : composite (déclaré × extrait vérifié × multi-sections), global. ✅
 6. `app/api_v2.py` — `analyser_v2` + la route, télémétrie, 503 explicite. ✅
-7. `eval/run_eval.py` — le gate : rappel, p95, coût, `history.jsonl`, code de sortie. ✅ — ⚠️ **la précision n'y est pas**
-   (constaté le 22/09 en lisant l'enregistrement du gate réel ; cette ligne disait « rappel + précision », c'était faux).
-   C'est A1 (§5), toujours à écrire.
+7. `eval/run_eval.py` — le gate : rappel, p95, coût, `history.jsonl`, code de sortie. ✅ La **précision** (A1, §5) n'y était
+   pas — constaté le 22/09 en lisant l'enregistrement du gate réel, alors que cette ligne disait « rappel + précision » ;
+   **écrite le 22/09** (`noter()`, `precision` + `en_trop` par contrat, rapportée, jamais bloquante). ✅
 8. `ops/deploy.py` — `publier` (refuse si le gate est rouge), `deployer_canary`, `promouvoir`, `rollback`, `surveiller`
    (alerte seule, **jamais** de rollback automatique — décision du formateur, 21/09, `CONTINUITE.md` §D quater). ✅
 9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2). ✅
@@ -143,8 +144,11 @@ quota à ce volume). **Puis le gate lui-même a tourné sur le vrai modèle** (`
 | Coût moyen par analyse | **0,030 €** | < 0,15 € |
 | Verdict | **PASSE**, code de sortie 0 | |
 
-Réserves : un seul essai (le bundle en prévoit 3) ; P95 sur 12 mesures ; les appels manuels par HTTP donnent 4,7 – 9,8 s
-selon le run — la marge sous 8 s est réelle, pas large. **A1 (précision) reste à écrire** : la note est le rappel seul.
+Deuxième run le même jour, une fois A1 écrit : **rappel 1,000, précision 0,950, P95 7 046 ms, coût 0,030 €, PASSE** — la
+précision montre ce que le rappel seul cachait (`garantie` annoncée sans être attendue sur c01, c04, c11 ; `résiliation` sur
+c03 : faux positifs du modèle ou attendus manquants, à trancher contrat par contrat).
+Réserves : un seul essai (le bundle en prévoit 3) ; P95 sur 12 mesures, **6 353 puis 7 046 ms** — la marge sous 8 000 est
+étroite ; les appels manuels par HTTP donnent 4,7 – 9,8 s selon le run.
 
 ## 📖 Glossaire
 
