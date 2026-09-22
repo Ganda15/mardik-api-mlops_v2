@@ -11,8 +11,13 @@ Contrat attendu :
                              (clauses attendues trouvées / clauses attendues), elle-même
                              moyennée sur ``n_essais`` passes — deux passes du vrai
                              modèle ne donnent pas la même note : c'est voulu.
-        par_contrat          {contrat_id: {"note", "seuil_note", "passe", "trouvees",
-                              "manquantes", "latence_ms", "cout_eur"}}
+        precision            moyenne sur les contrats de la précision (clauses annoncées
+                             qui étaient attendues / clauses annoncées) — rapportée à côté
+                             du rappel, jamais bloquante (spec §5 A1) : un modèle qui
+                             annoncerait les 14 types aurait un rappel parfait, c'est ici
+                             qu'on le voit.
+        par_contrat          {contrat_id: {"note", "precision", "seuil_note", "passe",
+                              "trouvees", "manquantes", "en_trop", "latence_ms", "cout_eur"}}
         latence_p95_ms       P95 des latences par analyse    (contrainte client : < 8 s)
         cout_moyen_eur       coût moyen par analyse          (contrainte client : < 0,15 €)
         passe                note >= seuil ET aucun contrat sous son ``seuil_note``
@@ -35,12 +40,16 @@ import argparse
 import json
 import re
 import sys
+import time
 from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from app.llm_client import Bundle
-from app.telemetry import Telemetry
+from app.api_v1 import analyser_v1
+from app.api_v2 import analyser_v2
+from app.llm_client import Bundle, LLMClient
+from app.telemetry import NoopSpanExporter, Telemetry, build_telemetry
 from ops.registry import MOTIF_VERSION, Registry
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -61,6 +70,7 @@ class Rapport:
     passe: bool
     motifs: list[str] = field(default_factory=list)
     seuil: float = 0.75
+    precision: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -81,11 +91,46 @@ def charger_bundle(version: str, registry: Registry | None = None) -> Bundle:
     return Bundle.charger(version)
 
 
+def noter(trouvees: set[str], attendues: set[str]) -> tuple[float, float, list[str]]:
+    """(rappel, précision, en_trop) d'une passe : ce qui est trouvé face à ce qui est attendu.
+
+    Rien d'annoncé → précision 1,0 (aucune erreur) mais rappel 0 ; rien d'attendu → rappel 1,0
+    et tout ce qui est annoncé est en trop.
+    """
+    justes = trouvees & attendues
+    rappel = len(justes) / len(attendues) if attendues else 1.0
+    precision = len(justes) / len(trouvees) if trouvees else 1.0
+    return rappel, precision, sorted(trouvees - attendues)
+
+
 def _p95(valeurs: list[float]) -> float:
     if not valeurs:
         return 0.0
     tri = sorted(valeurs)
     return tri[min(len(tri) - 1, int(round(0.95 * len(tri) + 0.5)) - 1)]
+
+
+def _analyser_une_fois(
+    bundle: Bundle, client: LLMClient, telemetry: Telemetry, texte: str
+) -> tuple[set[str], float, float]:
+    """Une passe d'analyse : renvoie (types de clauses trouvés, latence_ms, cout_eur).
+
+    v2 expose latence_ms et cout_eur directement dans sa réponse. v1 ne les expose pas
+    (ReponseAnalyseV1 n'a que clauses/modele/version/tronque) — on les relit dans la
+    dernière Mesure que analyser_v1 vient d'écrire dans la télémétrie : app/api_v1.py
+    est intouchable, relire sa propre télémétrie est la seule façon légitime de
+    récupérer ce chiffre sans dupliquer sa logique ailleurs.
+    """
+    if bundle.strategie == "map_reduce_clauses":
+        reponse = analyser_v2(texte, client, telemetry)
+        return {c.type for c in reponse.clauses}, reponse.latence_ms, reponse.cout_eur
+
+    debut = time.perf_counter()
+    reponse = analyser_v1(texte, client, telemetry)
+    latence_ms = (time.perf_counter() - debut) * 1000
+    mesures = telemetry.metriques.lire()
+    cout_eur = mesures[-1].cout_eur if mesures else 0.0
+    return set(reponse.clauses), latence_ms, cout_eur
 
 
 def evaluer(
@@ -102,7 +147,94 @@ def evaluer(
     sous_ensemble: list[str] | None = None,
     historique: Path | None = CHEMIN_HISTORIQUE,
 ) -> Rapport:
-    raise NotImplementedError("eval.run_eval.evaluer — le gate d'évaluation")
+    bundle = charger_bundle(version, registry)
+    client = LLMClient(bundle)
+    tel = telemetry or build_telemetry(
+        span_exporter=NoopSpanExporter(), metrics_path=RACINE / "eval" / ".metrics_eval.jsonl"
+    )
+    essais = n_essais or int(bundle.parametres.get("essais_eval", 1))
+
+    tous_attendus = charger_attendus(attendus)
+    ids = sous_ensemble or sorted(tous_attendus)
+
+    par_contrat: dict[str, dict[str, Any]] = {}
+    toutes_latences: list[float] = []
+    tous_couts: list[float] = []
+    notes: list[float] = []
+    precisions: list[float] = []
+
+    for contrat_id in ids:
+        item = tous_attendus[contrat_id]
+        attendues = set(item["clauses_attendues"])
+        texte = (contrats / f"{contrat_id}.txt").read_text(encoding="utf-8")
+
+        notes_essais: list[float] = []
+        precisions_essais: list[float] = []
+        dernieres_trouvees: set[str] = set()
+        dernier_en_trop: list[str] = []
+        for _ in range(essais):
+            trouvees, latence_ms, cout_eur = _analyser_une_fois(bundle, client, tel, texte)
+            toutes_latences.append(latence_ms)
+            tous_couts.append(cout_eur)
+            rappel, precision, en_trop = noter(trouvees, attendues)
+            notes_essais.append(rappel)
+            precisions_essais.append(precision)
+            dernieres_trouvees = trouvees & attendues
+            dernier_en_trop = en_trop
+
+        note_contrat = sum(notes_essais) / len(notes_essais)
+        precision_contrat = sum(precisions_essais) / len(precisions_essais)
+        seuil_note = float(item.get("seuil_note", seuil))
+        par_contrat[contrat_id] = {
+            "note": note_contrat,
+            "precision": precision_contrat,
+            "seuil_note": seuil_note,
+            "passe": note_contrat >= seuil_note,
+            "trouvees": sorted(dernieres_trouvees),
+            "manquantes": sorted(attendues - dernieres_trouvees),
+            "en_trop": dernier_en_trop,
+            "latence_ms": toutes_latences[-1],
+            "cout_eur": tous_couts[-1],
+        }
+        notes.append(note_contrat)
+        precisions.append(precision_contrat)
+
+    note_globale = sum(notes) / len(notes) if notes else 0.0
+    precision_globale = sum(precisions) / len(precisions) if precisions else 0.0
+    latence_p95 = _p95(toutes_latences)
+    cout_moyen = sum(tous_couts) / len(tous_couts) if tous_couts else 0.0
+
+    motifs: list[str] = []
+    if note_globale < seuil:
+        motifs.append(f"note {note_globale:.3f} < seuil {seuil}")
+    for cid, c in par_contrat.items():
+        if not c["passe"]:
+            motifs.append(f"{cid} : note {c['note']:.3f} < seuil_note {c['seuil_note']}")
+    if latence_p95 > latence_max_ms:
+        motifs.append(f"latence p95 {latence_p95:.0f} ms > {latence_max_ms:.0f} ms")
+    if cout_moyen > cout_max_eur:
+        motifs.append(f"coût moyen {cout_moyen:.4f} € > {cout_max_eur:.4f} €")
+
+    rapport = Rapport(
+        version=bundle.version,
+        date=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        essais=essais,
+        note=note_globale,
+        par_contrat=par_contrat,
+        latence_p95_ms=latence_p95,
+        cout_moyen_eur=cout_moyen,
+        passe=not motifs,
+        motifs=motifs,
+        seuil=seuil,
+        precision=precision_globale,
+    )
+
+    if historique is not None:
+        historique.parent.mkdir(parents=True, exist_ok=True)
+        with historique.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(rapport.to_dict(), ensure_ascii=False) + "\n")
+
+    return rapport
 
 
 def afficher(rapport: Rapport) -> None:
@@ -110,10 +242,14 @@ def afficher(rapport: Rapport) -> None:
     for cid, c in rapport.par_contrat.items():
         etat = "OK " if c["passe"] else "KO "
         manque = f"  manquantes: {', '.join(c['manquantes'])}" if c["manquantes"] else ""
-        print(f"  {etat} {cid}  note={c['note']:.2f}  (seuil {c['seuil_note']}){manque}")
+        en_trop = f"  en trop: {', '.join(c['en_trop'])}" if c.get("en_trop") else ""
+        print(
+            f"  {etat} {cid}  rappel={c['note']:.2f}  précision={c.get('precision', 0.0):.2f}"
+            f"  (seuil {c['seuil_note']}){manque}{en_trop}"
+        )
     print(
-        f"note globale = {rapport.note:.3f} | P95 = {rapport.latence_p95_ms:.0f} ms"
-        f" | coût moyen = {rapport.cout_moyen_eur:.4f} €"
+        f"rappel global = {rapport.note:.3f} | précision globale = {rapport.precision:.3f}"
+        f" | P95 = {rapport.latence_p95_ms:.0f} ms | coût moyen = {rapport.cout_moyen_eur:.4f} €"
     )
     print("GATE : " + ("PASSE" if rapport.passe else "ÉCHEC — " + " ; ".join(rapport.motifs)))
 

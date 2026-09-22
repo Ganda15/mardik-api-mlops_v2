@@ -121,11 +121,20 @@ def test_dashboard_par_version(metriques, registry):
     assert "v2.0.0" in rendre_texte(r)
 
 
-def test_journal_derive_et_rollback_automatique(metriques, registry):
-    """Étant donné un canary v2 dont le score de confiance dérive en production, quand
-    la surveillance s'exécute, alors elle détecte la dérive, déclenche le rollback et
-    inscrit au journal une entrée datée avec le motif et les versions avant/après."""
-    from ops.deploy import deployer_canary, surveiller
+def test_journal_derive_alerte_jamais_de_rollback_automatique(metriques, registry):
+    """RÉÉCRIT le 21/09/2026 — le test d'origine (nom : test_journal_derive_et_rollback_automatique)
+    attendait un rollback automatique sur dérive. Le formateur a tranché en classe ce jour-là :
+    « le rollback c'est une décision qui va être arbitrée » ; « pour beaucoup plus de simplicité,
+    [ça] devrait être laissé manuel ». surveiller() détecte la dérive et journalise une ALERTE ;
+    elle n'appelle jamais rollback() elle-même. Le retour arrière reste un geste humain explicite
+    — un second appel à rollback(), simulé ici en fin de test. Trace complète (citations datées) :
+    CONTINUITE.md §D quater du dossier du brief.
+
+    Étant donné un canary v2 dont le score de confiance dérive en production, quand la
+    surveillance s'exécute, alors elle détecte la dérive et journalise une alerte (pas un
+    rollback) ; un appel humain explicite à rollback() fait ensuite le retour arrière, tracé
+    séparément avec son propre motif."""
+    from ops.deploy import deployer_canary, rollback, surveiller
 
     _livrer_v2(registry)
     deployer_canary("v2.0.0", pourcentage=20, registry=registry)
@@ -146,12 +155,23 @@ def test_journal_derive_et_rollback_automatique(metriques, registry):
             Mesure(ts=time.time(), version="v2.0.0", route="/analyse", latence_ms=2500, score=0.5)
         )
     res = surveiller(registry, metriques, fenetre_s=60, score_min=0.7, minimum=10)
-    assert res["derive"] is True and res["rollback"] is True
+    assert res["derive"] is True
+    assert res["rollback"] is False  # jamais automatique — décision du formateur, 21/09
     assert "score" in res["motif"]
-    assert registry.canary() == (None, 0)
+    # rien n'a bougé dans le registre : la surveillance alerte, elle ne décide pas
+    assert registry.canary()[0] == "v2.0.0"
+    assert registry.active() == "v1.0.0"
+
+    alerte = registry.journal()[-1]
+    assert alerte["evenement"] == "alerte"
+    assert alerte["date"] and "score" in alerte["motif"]
+
+    # le geste humain : un appel explicite et séparé fait le retour arrière
+    index = rollback(registry=registry, motif=f"alerte : {res['motif']}")
+    assert index["canary"] is None
     assert registry.active() == "v1.0.0"
 
     entree = registry.journal()[-1]
     assert entree["evenement"] == "rollback"
-    assert entree["date"] and "score" in entree["motif"]
+    assert entree["date"] and entree["motif"].startswith("alerte")
     assert entree["avant"]["canary"] == "v2.0.0" and entree["apres"]["canary"] is None

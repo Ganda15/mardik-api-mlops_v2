@@ -30,7 +30,7 @@ test:               ## tout (intégration + acceptance), MOCK=on
 test-integration:   ## hérités de la remédiation : verts
 	MOCK=on uv run pytest -q tests/integration
 
-test-acceptance:    ## les 10 tests du brief : 9 rouges, 1 vert au départ
+test-acceptance:    ## les 10 tests du brief — tous verts depuis la brique 10 (Chantier 1)
 	MOCK=on uv run pytest -v tests/acceptance
 
 eval:               ## gate d'évaluation sur le VRAI modèle (VERSION=v2, ARGS="--essais 3")
@@ -44,11 +44,12 @@ fixtures:           ## (ré)enregistre les fixtures MOCK en appelant le vrai mod
 	MOCK=record uv run python -m eval.run_eval --version $(VERSION)
 	@echo "fixtures enregistrées dans eval/fixtures/ — à committer"
 
-ci:                 ## l'équivalent local du workflow GitHub (MOCK=on)
+ci:                 ## l'équivalent local du workflow GitHub (MOCK=on) — job 1 + gate (jobs 1-2)
 	uv run ruff check .
-	MOCK=on uv run pytest -q tests/integration
-	MOCK=on uv run pytest -q tests/acceptance
-	@echo "TODO gate d'évaluation / publication / canary : voir .github/workflows/llmops.yml"
+	MOCK=on uv run pytest -q
+	MOCK=on uv run python -m eval.run_eval --version v2 --seuil 0.75
+	@echo "publication / canary : voir .github/workflows/llmops.yml — s'exécutent à la fusion sur main,"
+	@echo "jamais ici (python -m ops.deploy publier <version> si besoin de le faire à la main)"
 
 lint:
 	uv run ruff check .

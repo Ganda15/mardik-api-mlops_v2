@@ -32,11 +32,19 @@ import random
 import re
 import sys
 import time
+from pathlib import Path
 
 import httpx
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response
 from pydantic import BaseModel
+
+# Lancé seul (make proxy / python -m ops.drift_proxy, hors docker compose), ce process
+# ne voit jamais .env autrement : app/__init__.py le charge, mais ce module ne l'importe
+# pas. Sans ça, AZURE_AI_ENDPOINT est vide ici même si l'app le voit — 502 "amont
+# injoignable" trompeur (mesuré le 21/09). override=False : docker compose garde la main.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=False)
 
 MODES = ("off", "latence", "erreurs", "score")
 _etat = {"mode": (os.environ.get("DRIFT", "off").strip().lower() or "off")}
@@ -66,7 +74,12 @@ def changer_mode(m: ModeDrift) -> dict[str, str]:
 def _amont(provider: str, chemin: str) -> tuple[str, dict[str, str]]:
     if provider == "azure":
         base = os.environ.get("AZURE_AI_ENDPOINT", "").rstrip("/")
-        version = os.environ.get("AZURE_AI_API_VERSION", "2024-05-01-preview")
+        version = os.environ.get("AZURE_AI_API_VERSION", "").strip()
+        if not version:
+            # Les surfaces Azure "openai/v1" (unifiée, compatible SDK OpenAI) refusent
+            # ce paramètre (400 "API version not supported", mesuré le 21/09) ; seule
+            # l'ancienne "Azure AI Inference" (.../models) l'exige. Vide = on ne l'ajoute pas.
+            return f"{base}/{chemin}", {}
         sep = "&" if "?" in chemin else "?"
         return f"{base}/{chemin}{sep}api-version={version}", {}
     base = os.environ.get("OLLAMA_URL", "http://localhost:11434").rstrip("/")

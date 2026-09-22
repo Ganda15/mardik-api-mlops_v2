@@ -24,9 +24,15 @@ Règles :
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Response
+import os
+import random
+
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 
+from app.api_v1 import analyser_v1
+from app.api_v2 import analyser_v2
+from app.llm_client import ErreurLLM, LLMClient
 from app.telemetry import Telemetry, build_default_telemetry
 from ops.registry import Registry
 
@@ -41,7 +47,9 @@ class RequeteAnalyse(BaseModel):
 def choisir_version(
     active: str, canary: str | None, canary_percent: int, tirage: float
 ) -> str:
-    raise NotImplementedError("gateway.choisir_version — fonction pure de routage canary")
+    if canary is not None and tirage < canary_percent:
+        return canary
+    return active
 
 
 def get_registry() -> Registry:
@@ -54,7 +62,12 @@ def get_telemetry() -> Telemetry:
 
 @router.get("/gateway/etat")
 def etat(registry: Registry = Depends(get_registry)) -> dict:
-    raise NotImplementedError("gateway.etat — GET /gateway/etat")
+    idx = registry.index()
+    return {
+        "active": idx.get("active"),
+        "canary": idx.get("canary"),
+        "canary_percent": idx.get("canary_percent", 0),
+    }
 
 
 @router.post("/analyse")
@@ -64,4 +77,24 @@ def analyse(
     registry: Registry = Depends(get_registry),
     telemetry: Telemetry = Depends(get_telemetry),
 ) -> dict:
-    raise NotImplementedError("gateway.analyse — POST /analyse, routage canary v1/v2")
+    idx = registry.index()
+    active = idx.get("active")
+    canary = idx.get("canary")
+    canary_percent = int(os.environ.get("CANARY_PERCENT", idx.get("canary_percent", 0)))
+
+    tirage = random.uniform(0, 100)
+    version_servie = choisir_version(active, canary, canary_percent, tirage)
+
+    bundle = registry.bundle(version_servie)
+    client = LLMClient(bundle)
+
+    try:
+        if bundle.strategie == "map_reduce_clauses":
+            reponse = analyser_v2(requete.texte, client, telemetry)
+        else:
+            reponse = analyser_v1(requete.texte, client, telemetry)
+    except ErreurLLM as exc:
+        raise HTTPException(status_code=503, detail=f"fournisseur LLM indisponible : {exc}")
+
+    response.headers["X-Mardik-Version"] = version_servie
+    return reponse.model_dump()

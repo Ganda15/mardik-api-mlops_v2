@@ -1,23 +1,20 @@
-"""Score de confiance composite, par clause puis global. [STUB]
-
-Contrat attendu :
+"""Score de confiance composite, par clause puis global. Brique 5.
 
     scorer(clauses: list[Clause], texte: str) -> tuple[list[Clause], float]
 
-* Une ``Clause`` porte ``type``, ``extrait``, ``confiance_llm`` (la certitude
-  déclarée par le modèle, 0–1), ``sections`` (indices des sections où elle a
-  été vue) et ``confiance`` (le score composite, à calculer ici).
-* Le score composite combine au moins deux signaux indépendants : ce que le
-  modèle déclare, et une vérification que l'on peut faire *sans* lui (par
-  exemple : l'extrait cité figure-t-il vraiment dans le contrat ? la clause
-  a-t-elle été vue dans plusieurs sections ?). Un modèle très sûr de lui sur
-  une citation inventée doit obtenir un score bas.
-* Le score global est un résumé des scores par clause (0 si aucune clause) ;
-  c'est lui que le client lit « pour savoir quand relire ».
+Le score combine deux signaux indépendants : ce que le modèle déclare (``confiance_llm``) et
+une vérification faite SANS lui — l'extrait cité figure-t-il vraiment, mot pour mot, dans le
+contrat ? Un extrait absent du texte (citation inventée) ramène le score composite à 0, quelle
+que soit la confiance déclarée : c'est la garantie explicite de cette brique — un modèle sûr de
+lui sur une citation inventée obtient un score bas, jamais un chiffre rassurant. Une clause vue
+dans plusieurs sections reçoit un petit bonus (corroboration faible, pas une preuve), plafonné
+à 1.0. Le score global est la moyenne des scores par clause, 0 si la liste est vide.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+
+BONUS_MULTI_SECTIONS = 0.05  # valeur de travail, à ajuster avec le golden dataset (brique 7)
 
 
 @dataclass
@@ -38,4 +35,23 @@ class Clause:
 
 
 def scorer(clauses: list[Clause], texte: str) -> tuple[list[Clause], float]:
-    raise NotImplementedError("pipeline.confiance.scorer — score composite par clause + global")
+    for clause in clauses:
+        if _extrait_verifie(clause.extrait, texte):
+            bonus = BONUS_MULTI_SECTIONS if len(clause.sections) > 1 else 0.0
+            clause.confiance = min(1.0, clause.confiance_llm + bonus)
+        else:
+            clause.confiance = 0.0  # citation invérifiable : jamais un chiffre rassurant
+
+    score_global = sum(c.confiance for c in clauses) / len(clauses) if clauses else 0.0
+    return clauses, score_global
+
+
+def _extrait_verifie(extrait: str, texte: str) -> bool:
+    """Vrai seulement si ``extrait``, non vide, figure mot pour mot dans ``texte``.
+
+    Le garde ``extrait.strip()`` existe précisément parce qu'en Python ``"" in texte``
+    vaut toujours ``True`` — sans lui, un extrait vide serait à tort considéré comme
+    « vérifié ».
+    """
+    extrait = extrait.strip()
+    return bool(extrait) and extrait in texte
