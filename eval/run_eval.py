@@ -11,8 +11,13 @@ Contrat attendu :
                              (clauses attendues trouvées / clauses attendues), elle-même
                              moyennée sur ``n_essais`` passes — deux passes du vrai
                              modèle ne donnent pas la même note : c'est voulu.
-        par_contrat          {contrat_id: {"note", "seuil_note", "passe", "trouvees",
-                              "manquantes", "latence_ms", "cout_eur"}}
+        precision            moyenne sur les contrats de la précision (clauses annoncées
+                             qui étaient attendues / clauses annoncées) — rapportée à côté
+                             du rappel, jamais bloquante (spec §5 A1) : un modèle qui
+                             annoncerait les 14 types aurait un rappel parfait, c'est ici
+                             qu'on le voit.
+        par_contrat          {contrat_id: {"note", "precision", "seuil_note", "passe",
+                              "trouvees", "manquantes", "en_trop", "latence_ms", "cout_eur"}}
         latence_p95_ms       P95 des latences par analyse    (contrainte client : < 8 s)
         cout_moyen_eur       coût moyen par analyse          (contrainte client : < 0,15 €)
         passe                note >= seuil ET aucun contrat sous son ``seuil_note``
@@ -65,6 +70,7 @@ class Rapport:
     passe: bool
     motifs: list[str] = field(default_factory=list)
     seuil: float = 0.75
+    precision: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -83,6 +89,18 @@ def charger_bundle(version: str, registry: Registry | None = None) -> Bundle:
     if MOTIF_VERSION.match(version):
         return (registry or Registry()).bundle(version)
     return Bundle.charger(version)
+
+
+def noter(trouvees: set[str], attendues: set[str]) -> tuple[float, float, list[str]]:
+    """(rappel, précision, en_trop) d'une passe : ce qui est trouvé face à ce qui est attendu.
+
+    Rien d'annoncé → précision 1,0 (aucune erreur) mais rappel 0 ; rien d'attendu → rappel 1,0
+    et tout ce qui est annoncé est en trop.
+    """
+    justes = trouvees & attendues
+    rappel = len(justes) / len(attendues) if attendues else 1.0
+    precision = len(justes) / len(trouvees) if trouvees else 1.0
+    return rappel, precision, sorted(trouvees - attendues)
 
 
 def _p95(valeurs: list[float]) -> float:
@@ -143,6 +161,7 @@ def evaluer(
     toutes_latences: list[float] = []
     tous_couts: list[float] = []
     notes: list[float] = []
+    precisions: list[float] = []
 
     for contrat_id in ids:
         item = tous_attendus[contrat_id]
@@ -150,29 +169,38 @@ def evaluer(
         texte = (contrats / f"{contrat_id}.txt").read_text(encoding="utf-8")
 
         notes_essais: list[float] = []
-        derniere_trouvees: set[str] = set()
+        precisions_essais: list[float] = []
+        dernieres_trouvees: set[str] = set()
+        dernier_en_trop: list[str] = []
         for _ in range(essais):
             trouvees, latence_ms, cout_eur = _analyser_une_fois(bundle, client, tel, texte)
             toutes_latences.append(latence_ms)
             tous_couts.append(cout_eur)
-            derniere_trouvees = trouvees & attendues
-            note = len(derniere_trouvees) / len(attendues) if attendues else 1.0
-            notes_essais.append(note)
+            rappel, precision, en_trop = noter(trouvees, attendues)
+            notes_essais.append(rappel)
+            precisions_essais.append(precision)
+            dernieres_trouvees = trouvees & attendues
+            dernier_en_trop = en_trop
 
         note_contrat = sum(notes_essais) / len(notes_essais)
+        precision_contrat = sum(precisions_essais) / len(precisions_essais)
         seuil_note = float(item.get("seuil_note", seuil))
         par_contrat[contrat_id] = {
             "note": note_contrat,
+            "precision": precision_contrat,
             "seuil_note": seuil_note,
             "passe": note_contrat >= seuil_note,
-            "trouvees": sorted(derniere_trouvees),
-            "manquantes": sorted(attendues - derniere_trouvees),
+            "trouvees": sorted(dernieres_trouvees),
+            "manquantes": sorted(attendues - dernieres_trouvees),
+            "en_trop": dernier_en_trop,
             "latence_ms": toutes_latences[-1],
             "cout_eur": tous_couts[-1],
         }
         notes.append(note_contrat)
+        precisions.append(precision_contrat)
 
     note_globale = sum(notes) / len(notes) if notes else 0.0
+    precision_globale = sum(precisions) / len(precisions) if precisions else 0.0
     latence_p95 = _p95(toutes_latences)
     cout_moyen = sum(tous_couts) / len(tous_couts) if tous_couts else 0.0
 
@@ -198,6 +226,7 @@ def evaluer(
         passe=not motifs,
         motifs=motifs,
         seuil=seuil,
+        precision=precision_globale,
     )
 
     if historique is not None:
@@ -213,10 +242,14 @@ def afficher(rapport: Rapport) -> None:
     for cid, c in rapport.par_contrat.items():
         etat = "OK " if c["passe"] else "KO "
         manque = f"  manquantes: {', '.join(c['manquantes'])}" if c["manquantes"] else ""
-        print(f"  {etat} {cid}  note={c['note']:.2f}  (seuil {c['seuil_note']}){manque}")
+        en_trop = f"  en trop: {', '.join(c['en_trop'])}" if c.get("en_trop") else ""
+        print(
+            f"  {etat} {cid}  rappel={c['note']:.2f}  précision={c.get('precision', 0.0):.2f}"
+            f"  (seuil {c['seuil_note']}){manque}{en_trop}"
+        )
     print(
-        f"note globale = {rapport.note:.3f} | P95 = {rapport.latence_p95_ms:.0f} ms"
-        f" | coût moyen = {rapport.cout_moyen_eur:.4f} €"
+        f"rappel global = {rapport.note:.3f} | précision globale = {rapport.precision:.3f}"
+        f" | P95 = {rapport.latence_p95_ms:.0f} ms | coût moyen = {rapport.cout_moyen_eur:.4f} €"
     )
     print("GATE : " + ("PASSE" if rapport.passe else "ÉCHEC — " + " ; ".join(rapport.motifs)))
 
