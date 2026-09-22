@@ -32,6 +32,15 @@ def test_bundle_v2_parametres_fixes_pour_un_gate_stable():
     assert p.get("contexte_max_caracteres", 0) > 0
 
 
+def test_bundle_v2_parallelisme_couvre_le_plus_long_contrat_en_une_vague():
+    # Mesuré le 22/09 sur Azure (gpt-5.4) : à 4 appels simultanés, c07 = ~30 s pour 8 s
+    # exigées ; toutes les sections en une vague, c07/c10/c12 = 4,8 à 5,9 s. c12 a 31
+    # sections : en dessous, une deuxième vague et le budget saute. Trafic client ~20
+    # requêtes/jour (spec §4) : 32 appels simultanés par requête ne risquent pas de quota.
+    p = Bundle.charger("v2").parametres
+    assert p.get("parallelisme", 1) >= 31, "c12 = 31 sections, il faut une seule vague"
+
+
 def test_bundle_v2_schema_sortie_couvre_le_vocabulaire_partage():
     bundle = Bundle.charger("v2")
     schema = bundle.schema_sortie
