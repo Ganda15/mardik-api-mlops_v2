@@ -95,7 +95,9 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 4. `app/pipeline/consolidation.py` — `consolider` : un type = une clause, extrait le plus long, sections fusionnées. ✅
 5. `app/pipeline/confiance.py` — `scorer` : composite (déclaré × extrait vérifié × multi-sections), global. ✅
 6. `app/api_v2.py` — `analyser_v2` + la route, télémétrie, 503 explicite. ✅
-7. `eval/run_eval.py` — le gate : rappel + précision, p95, coût, `history.jsonl`, code de sortie. ✅
+7. `eval/run_eval.py` — le gate : rappel, p95, coût, `history.jsonl`, code de sortie. ✅ — ⚠️ **la précision n'y est pas**
+   (constaté le 22/09 en lisant l'enregistrement du gate réel ; cette ligne disait « rappel + précision », c'était faux).
+   C'est A1 (§5), toujours à écrire.
 8. `ops/deploy.py` — `publier` (refuse si le gate est rouge), `deployer_canary`, `promouvoir`, `rollback`, `surveiller`
    (alerte seule, **jamais** de rollback automatique — décision du formateur, 21/09, `CONTINUITE.md` §D quater). ✅
 9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2). ✅
@@ -131,8 +133,18 @@ les 3 contrats que ce §3 nomme explicitement :
 un vrai parallélisme côté fournisseur (4+ appels simultanés, Azure ne fait pas la queue comme Ollama). Deux bugs réels trouvés
 et corrigés en testant contre le vrai modèle (`max_tokens` → `max_completion_tokens` pour `gpt-5.4` ; le paramètre
 `api-version` cassait la surface Azure unifiée `.../openai/v1`) — détail et commits dans `ETAT.md` du dossier du brief.
-Point ouvert, non mesuré sous charge réelle : le risque de quota/rate-limit Azure avec plusieurs requêtes simultanées envoyant
-chacune 20-30 appels parallèles — `parallelisme: 4` reste la valeur par défaut du bundle tant que ce n'est pas tranché.
+**Tranché le 22/09 : `parallelisme: 32`** (une vague pour c12, 31 sections ; trafic client ~20 req/jour, §4 — pas de risque de
+quota à ce volume). **Puis le gate lui-même a tourné sur le vrai modèle** (`MOCK=off`, 1 essai, ~0,40 €) :
+
+| Gate v2.0.0, Azure `gpt-5.4`, 22/09 | Mesuré | Seuil |
+|---|---|---|
+| Note globale (rappel) | **1,000** — 12/12 contrats ≥ leur `seuil_note` | ≥ 0,75 (0,8 pour c07, c10, c12) |
+| Latence P95 | **6 353 ms** | < 8 000 ms |
+| Coût moyen par analyse | **0,030 €** | < 0,15 € |
+| Verdict | **PASSE**, code de sortie 0 | |
+
+Réserves : un seul essai (le bundle en prévoit 3) ; P95 sur 12 mesures ; les appels manuels par HTTP donnent 4,7 – 9,8 s
+selon le run — la marge sous 8 s est réelle, pas large. **A1 (précision) reste à écrire** : la note est le rappel seul.
 
 ## 📖 Glossaire
 
