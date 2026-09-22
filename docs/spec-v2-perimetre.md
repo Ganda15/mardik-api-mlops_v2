@@ -104,6 +104,12 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2). ✅
 10. `ops/dashboard.py` — `resume` (agrégats par version), `rendre_texte`, `rendre_html`.
 11. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant. ✅
+    **Exécutée pour de vrai le 22/09** (PR #1 puis fusion sur `main`, run 35715784616, 7/7 jobs verts) après correction de
+    4 défauts trouvés à la relecture (registre éphémère sur le runner, version calculée depuis des dossiers absents, job canary
+    sans le registre publié, image jamais poussée, `GITHUB_TOKEN` en lecture seule). Traces : image
+    `ghcr.io/ganda15/mardik-api-mlops_v2:v2.0.0` (publique), tag git `v2.0.0` annoté, artefacts `registry-v2.0.0` et
+    `registry-v2.0.0-canary` (`index.json` : active v1.0.0, canary v2.0.0 à 10 %). Réserve : le manifeste publié porte
+    `modele: modele-ci` et `note_eval: 1.0` (environnement CI, `MOCK=on`), pas le vrai modèle ni la vraie note.
 12. `app/api_v2.py` — sections analysées en parallèle (`parallelisme` du bundle, pool borné, ordre conservé, spans imbriqués). ✅
     Ajoutée le 21/09 après la mesure réelle ci-dessous ; **juste chez un fournisseur qui sert plusieurs requêtes à la fois, sans
     effet (et même nuisible : 503) sur un Ollama local à `OLLAMA_NUM_PARALLEL=1`**.
