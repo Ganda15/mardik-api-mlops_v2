@@ -52,6 +52,19 @@ def choisir_version(
     return active
 
 
+def pourcentage_effectif(idx: dict) -> tuple[int, str]:
+    """(pourcentage appliqué, source) — ``CANARY_PERCENT`` force la valeur du registre.
+
+    Vide = absent : ``CANARY_PERCENT=`` dans un .env ne doit ni planter (``int('')``)
+    ni forcer 0. Constaté le 22/09 : l'env forçait 10 % pendant que /gateway/etat
+    annonçait 50 % — les deux routes passent désormais par ici.
+    """
+    force = os.environ.get("CANARY_PERCENT", "").strip()
+    if force:
+        return int(force), "env:CANARY_PERCENT"
+    return int(idx.get("canary_percent", 0) or 0), "registre"
+
+
 def get_registry() -> Registry:
     return Registry()
 
@@ -63,10 +76,13 @@ def get_telemetry() -> Telemetry:
 @router.get("/gateway/etat")
 def etat(registry: Registry = Depends(get_registry)) -> dict:
     idx = registry.index()
+    pct, source = pourcentage_effectif(idx)
     return {
         "active": idx.get("active"),
         "canary": idx.get("canary"),
-        "canary_percent": idx.get("canary_percent", 0),
+        "canary_percent": pct,
+        "canary_percent_registre": int(idx.get("canary_percent", 0) or 0),
+        "source": source,
     }
 
 
@@ -80,7 +96,7 @@ def analyse(
     idx = registry.index()
     active = idx.get("active")
     canary = idx.get("canary")
-    canary_percent = int(os.environ.get("CANARY_PERCENT", idx.get("canary_percent", 0)))
+    canary_percent, _ = pourcentage_effectif(idx)
 
     tirage = random.uniform(0, 100)
     version_servie = choisir_version(active, canary, canary_percent, tirage)
