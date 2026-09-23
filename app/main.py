@@ -13,7 +13,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from app import api_v1, api_v2, gateway
+from app import api_v1, api_v2, gateway, pilotage
 from app.securite import garde_instance_publique, verifier_configuration
 from app.telemetry import build_default_telemetry
 
@@ -31,6 +31,7 @@ def create_app() -> FastAPI:
     app.include_router(api_v1.router)
     app.include_router(api_v2.router)
     app.include_router(gateway.router)
+    app.include_router(pilotage.router)  # brique 16 (Ch2)
 
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     def page_accueil() -> HTMLResponse:

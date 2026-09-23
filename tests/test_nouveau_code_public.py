@@ -31,3 +31,20 @@ def test_public_env_est_ignore_par_git():
 
     ignores = (Path(__file__).resolve().parent.parent / ".gitignore").read_text(encoding="utf-8")
     assert "public.env" in ignores.splitlines()
+
+
+def test_le_jeton_d_administration_a_son_propre_fichier(tmp_path):
+    """Brique 16 : le jeton qui autorise le rollback est distinct de la clé du lien public."""
+    from scripts.nouveau_code_public import ecrire_jeton_admin
+
+    chemin = tmp_path / "admin.env"
+    jeton = ecrire_jeton_admin(chemin)
+    assert chemin.read_text(encoding="utf-8") == f"MARDIK_ADMIN_TOKEN={jeton}\n"
+    assert len(jeton) >= 20
+
+
+def test_admin_env_est_ignore_par_git():
+    from pathlib import Path
+
+    ignores = (Path(__file__).resolve().parent.parent / ".gitignore").read_text(encoding="utf-8")
+    assert "admin.env" in ignores.splitlines()

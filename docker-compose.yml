@@ -5,7 +5,10 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "127.0.0.1:8000:8000"   # ce poste seulement (23/09 : sans 127.0.0.1, ouvert à tout le réseau local)
-    env_file: .env
+    env_file:
+      - .env
+      - path: admin.env         # jeton du rollback par la page /pilotage (brique 16) ; absent = rollback par l'API désactivé
+        required: false
     environment:
       LLM_PROXY_URL: http://proxy:8080
       METRICS_PATH: /app/ops/metrics.jsonl
@@ -48,6 +51,22 @@ services:
     depends_on:
       - app
 
+  # Le watcher (brique 15, Ch2) : toutes les 60 s, il alerte sur dérive et promeut le canary quand TOUS
+  # les critères de eval/thresholds.yml tiennent. Il ne recule jamais seul : le retour arrière se décide
+  # sur la page /pilotage (ou par le workflow rollback.yml). Aucun port : il lit et écrit le registre.
+  watcher:
+    build: .
+    command: python -m ops.watcher --boucle --intervalle 60
+    env_file: .env
+    environment:
+      METRICS_PATH: /app/ops/metrics.jsonl
+      REGISTRY_PATH: /app/ops/registry
+    volumes:
+      - ./ops:/app/ops
+      - ./eval:/app/eval        # eval/thresholds.yml : un seuil modifié est lu au tour suivant
+    depends_on:
+      - app
+
   # --- Le lien public (profil « public », décision d'Era du 23/09, option C) ----------------
   # Démarre seulement avec : docker compose --profile public up -d
   # Code d'accès et plafond : public.env, créé par  uv run python -m scripts.nouveau_code_public
@@ -63,6 +82,8 @@ services:
       - .env
       - path: public.env
         required: false         # absent = pas de clé = l'instance refuse de démarrer
+      - path: admin.env
+        required: false
     environment:
       MARDIK_EXIGER_CLE: "1"
       LLM_PROXY_URL: http://proxy:8080
