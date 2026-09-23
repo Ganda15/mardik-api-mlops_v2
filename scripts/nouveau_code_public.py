@@ -5,7 +5,7 @@
     uv run python -m scripts.nouveau_code_public --admin      # admin.env : le jeton du rollback (brique 16)
 
 Le fichier est lu par le service ``public`` de docker-compose, et ignoré par git. Le code
-est affiché une seule fois : on le recopie dans le champ « Code d'accès » de la page, et
+n'est jamais affiché en entier (4 caractères) : on le lit avec « notepad public.env », on le recopie dans la page, et
 nulle part ailleurs (ni chat, ni fichier partagé). Relancer le script = nouveau code ;
 redémarrer ensuite le service : ``docker compose --profile public up -d``.
 """
@@ -39,16 +39,18 @@ def main() -> None:
     parser.add_argument("--budget", type=float, default=2.0, help="plafond de coût sur 24 h, en euros")
     parser.add_argument("--admin", action="store_true", help="écrire admin.env (jeton du rollback) à la place")
     args = parser.parse_args()
+    # Jamais le secret en entier à l'écran (23/09 : trois secrets copiés depuis le terminal dans un chat).
+    # On montre 4 caractères pour reconnaître la valeur ; on la lit en entier dans le fichier, avec le Bloc-notes.
     if args.admin:
-        jeton = ecrire_jeton_admin()
-        print(f"Jeton d'administration : {jeton}")
-        print(f"Fichier : {CHEMIN_ADMIN}. À saisir dans la page /pilotage pour autoriser un retour arrière.")
-        print("Ne collez ce jeton dans aucun chat ni fichier partagé.")
+        jeton = ecrire_jeton_admin(CHEMIN_ADMIN)
+        print(f"Nouveau jeton d'administration écrit : {jeton[:4]}… (l'ancien ne marche plus)")
+        print(f"Pour le lire en entier : notepad {CHEMIN_ADMIN.name}   (à saisir dans la page /pilotage)")
+        print("Puis : docker compose up -d --force-recreate app")
         return
-    code = ecrire_fichier_code(budget_eur=args.budget)
-    print(f"Code d'accès : {code}")
-    print(f"Plafond : {args.budget} € sur 24 h. Fichier : {CHEMIN_DEFAUT}")
-    print("Ne collez ce code dans aucun chat ni fichier partagé.")
+    code = ecrire_fichier_code(CHEMIN_DEFAUT, budget_eur=args.budget)
+    print(f"Nouveau code d'accès écrit : {code[:4]}… (plafond {args.budget} € sur 24 h)")
+    print(f"Pour le lire en entier : notepad {CHEMIN_DEFAUT.name}   (à donner avec le lien, par un autre canal)")
+    print("Puis : docker compose --profile public up -d --force-recreate public")
 
 
 if __name__ == "__main__":

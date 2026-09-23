@@ -48,3 +48,20 @@ def test_admin_env_est_ignore_par_git():
 
     ignores = (Path(__file__).resolve().parent.parent / ".gitignore").read_text(encoding="utf-8")
     assert "admin.env" in ignores.splitlines()
+
+
+def test_le_script_n_affiche_jamais_le_secret_en_entier(tmp_path, monkeypatch, capsys):
+    """23/09 : trois secrets affichés par ce script ont fini collés dans un chat — copier la sortie du
+    terminal est le geste normal. Le script n'affiche donc que les 4 premiers caractères."""
+    import scripts.nouveau_code_public as s
+
+    monkeypatch.setattr(s, "CHEMIN_DEFAUT", tmp_path / "public.env")
+    monkeypatch.setattr(s, "CHEMIN_ADMIN", tmp_path / "admin.env")
+    for argv in (["prog"], ["prog", "--admin"]):
+        monkeypatch.setattr("sys.argv", argv)
+        s.main()
+    sortie = capsys.readouterr().out
+    code = (tmp_path / "public.env").read_text(encoding="utf-8").split("\n")[0].split("=", 1)[1]
+    jeton = (tmp_path / "admin.env").read_text(encoding="utf-8").strip().split("=", 1)[1]
+    assert code not in sortie and jeton not in sortie
+    assert code[:4] in sortie and jeton[:4] in sortie
