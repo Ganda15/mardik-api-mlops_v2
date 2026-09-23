@@ -1,0 +1,18 @@
+# Overlay de DÉMONSTRATION — jamais utilisé seul, toujours en plus de docker-compose.yml :
+#
+#   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+#
+# Change deux choses, rien d'autre :
+#   1. MARDIK_SEUILS pointe vers eval/thresholds.demo.yml (temps d'attente raccourcis — voir ce fichier) ;
+#   2. le watcher tourne toutes les 10 s au lieu de 60, pour une démo qui ne traîne pas.
+# app, proxy, dashboard restent les mêmes conteneurs : ce qu'on montre est le système livré, pas une maquette.
+
+services:
+  app:
+    environment:
+      MARDIK_SEUILS: /app/eval/thresholds.demo.yml
+
+  watcher:
+    command: python -m ops.watcher --boucle --intervalle 10
+    environment:
+      MARDIK_SEUILS: /app/eval/thresholds.demo.yml
