@@ -6,7 +6,7 @@
 
 Le fichier est lu par le service ``public`` de docker-compose, et ignoré par git. Le code
 n'est jamais affiché en entier (4 caractères) : on le lit avec « notepad public.env », on le recopie dans la page, et
-nulle part ailleurs (ni chat, ni fichier partagé). Relancer le script = nouveau code ;
+nulle part ailleurs (ni message, ni fichier partagé). Relancer le script = nouveau code ;
 redémarrer ensuite le service : ``docker compose --profile public up -d``.
 """
 from __future__ import annotations
@@ -39,7 +39,7 @@ def main() -> None:
     parser.add_argument("--budget", type=float, default=2.0, help="plafond de coût sur 24 h, en euros")
     parser.add_argument("--admin", action="store_true", help="écrire admin.env (jeton du rollback) à la place")
     args = parser.parse_args()
-    # Jamais le secret en entier à l'écran (23/09 : trois secrets copiés depuis le terminal dans un chat).
+    # Jamais le secret en entier à l'écran (23/09 : trois secrets copiés depuis le terminal dans un message).
     # On montre 4 caractères pour reconnaître la valeur ; on la lit en entier dans le fichier, avec le Bloc-notes.
     if args.admin:
         jeton = ecrire_jeton_admin(CHEMIN_ADMIN)

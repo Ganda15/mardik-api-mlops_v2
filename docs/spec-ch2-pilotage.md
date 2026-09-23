@@ -79,7 +79,7 @@ Les cinq tests fournis de `tests/acceptance/test_observabilite.py` sont **verts 
 | Poids du canary | `weights.json`, `set_weight` | l'index du registre (`canary_percent`), `deployer_canary` | le dépôt a déjà ce mécanisme, lu à chaque requête par la gateway |
 | Journal | `ops/journal.jsonl` | `ops/registry/journal.jsonl`, **un seul** journal | le dépôt l'écrit déjà ; deux journaux = deux vérités |
 | `llmops.yml` « ne change pas » | intact | **deux lignes retirées** (`--seuil 0.75` codé en dur, gate et publication) | sans cela le fichier de seuils serait ignoré par la chaîne — « documenté mais absent » ; aucune étape ajoutée ni retirée (brique 13) |
-| Référence de la dérive | la signature calculée par le gate, portée par le manifeste | **mesurée** sur 17 analyses réelles saines (médiane 0,993, part < 0,5 : 5,9 %), écrite dans `eval/thresholds.yml` §`signature`, validée par Era le 23/09 — **provisoire** | le manifeste ne porte pas encore de signature ; constat utile : la dérive simulée met les scores à ~0,52, juste au-dessus de 0,5 — la part < 0,5 bouge peu (+6,6 pts), la **médiane** s'effondre (−0,47) : les deux statistiques sont surveillées parce que chacune voit ce que l'autre rate |
+| Référence de la dérive | la signature calculée par le gate, portée par le manifeste | **mesurée** sur 17 analyses réelles saines (médiane 0,993, part < 0,5 : 5,9 %), écrite dans `eval/thresholds.yml` §`signature`, validée le 23/09 — **provisoire** | le manifeste ne porte pas encore de signature ; constat utile : la dérive simulée met les scores à ~0,52, juste au-dessus de 0,5 — la part < 0,5 bouge peu (+6,6 pts), la **médiane** s'effondre (−0,47) : les deux statistiques sont surveillées parce que chacune voit ce que l'autre rate |
 | Journal et capture | une ligne `capture` au journal par cas capturé | la capture est tracée dans `ops/candidats.jsonl` (heure, requête, score, seuil) ; le journal garde les **décisions** (alerte, promotion, refus, rollback, **enrichissement**, seuil) | journaliser chaque capture cassait le test fourni `test_promotion_canary_puis_totale` (« chaque étape est journalisée » : les deux dernières lignes doivent être canary puis promotion) et noyait les décisions ; une capture est une observation, l'ajout au jeu d'évaluation est la décision, et il est journalisé |
 | Seuils | `thresholds.yml` | **`eval/thresholds.yml`** | sous `eval/`, un changement de seuil déclenche le gate dès la PR (filtre de chemin) — exactement la procédure §9 |
 | Watcher | conteneur à part, boucle 60 s / 10 min | un module appelable une fois (`tick`) ou en boucle ; service `watcher` dans `docker-compose.yml` | testable sans horloge ; même service en démo |
@@ -114,9 +114,9 @@ les tests du brief exigent (13 → 16) ; 17 et 18 viennent ensuite. Aucune briqu
 
 ## 8. À clarifier
 
-- **[TRANCHÉ par Era, 23/09 : les deux chemins, §6]** « le rollback s'exécute **via la chaîne** » : le bouton qui modifie le registre lu par la gateway
+- **[TRANCHÉ à la main, 23/09 : les deux chemins, §6]** « le rollback s'exécute **via la chaîne** » : le bouton qui modifie le registre lu par la gateway
   suffit-il, ou attend-il un déclenchement GitHub Actions (`workflow_dispatch`) ? Le registre de production est local, pas sur le
   runner ; la conception a retenu le premier.
-- **[TRANCHÉ par Era, 23/09 : oui]** l'échéance du 24/09 s'applique-t-elle à ce projet (elle a été dite pendant la présentation d'un camarade) ?
+- **[TRANCHÉ à la main, 23/09 : oui]** l'échéance du 24/09 s'applique-t-elle à ce projet (elle a été dite pendant la présentation d'un camarade) ?
 - **[À CLARIFIER — client]** l'anonymisation des contrats capturés : le masquage par motifs est partiel ; la question reste ouverte
   avec le client (conception §4.3).

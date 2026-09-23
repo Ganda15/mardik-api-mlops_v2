@@ -200,7 +200,7 @@ jobs:
         with:
           python-version: "3.11"
       - run: uv sync
-      # Brique 21 : gate RÉEL exigé ? (variable de dépôt MARDIK_EXIGER_EVAL_OK=1, posée par Era une fois les
+      # Brique 21 : gate RÉEL exigé ? (variable de dépôt MARDIK_EXIGER_EVAL_OK=1, posée une fois les
       # secrets Azure en place). Sans le tag eval-ok/<sha> posé par gate-reel.yml : publication REFUSÉE.
       # Avec : le manifeste est publié depuis le rapport du vrai gate (vrai modèle, vraie signature).
       - name: Gate réel exigé — tag eval-ok/<sha> et rapport de gate-reel.yml

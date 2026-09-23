@@ -1,4 +1,4 @@
-# Gate RÉEL — brique 21 (23/09). Idée de David en réunion, reprise par Era.
+# Gate RÉEL — brique 21 (23/09). Idée de David en réunion, reprise dans la chaîne.
 #
 # llmops.yml tourne en MOCK (gratuit) : il prouve la MÉCANIQUE du gate, pas les chiffres du vrai modèle —
 # son manifeste dit `modele-ci`. Ce workflow, déclenché À LA MAIN, joue le gate sur Azure pour un commit
@@ -11,7 +11,7 @@
 # vrai modèle et la vraie signature. Variable absente : comportement inchangé (MOCK), pour ne pas
 # bloquer main avant que les secrets existent.
 #
-# Secrets à poser par Era (Settings → Secrets and variables → Actions) — jamais dans le dépôt :
+# Secrets à poser (Settings → Secrets and variables → Actions) — jamais dans le dépôt :
 #   AZURE_AI_ENDPOINT   la surface openai/v1 de la ressource (même valeur que dans .env)
 #   AZURE_AI_API_KEY    la clé
 # Variables (facultatives) : LLM_MODEL (défaut gpt-5.4), AZURE_AI_API_VERSION.

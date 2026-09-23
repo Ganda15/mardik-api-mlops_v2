@@ -63,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.action == "public":
         lien = lien_tunnel()
         print(f"lien public : {lien}" if lien else "lien public : pas encore dans les journaux — docker compose logs tunnel")
-        print("code d'accès : notepad public.env — jamais dans un chat")
+        print("code d'accès : notepad public.env — jamais dans un message")
     return 0
 
 
