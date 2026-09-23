@@ -1,0 +1,73 @@
+# Retour arrière PAR LA CHAÎNE — Chantier 2, brique 16 (décision d'Era du 23/09 : le bouton de la page
+# de pilotage ET ce workflow). Toujours déclenché par un humain (arbitrage du CTO : jamais automatique) :
+# GitHub → Actions → « rollback » → Run workflow → votre nom + le motif.
+#
+# Ce qu'il fait : il récupère le DERNIER registre publié par llmops.yml (artefact registry-*), y exécute
+# « ops.deploy rollback » avec l'acteur et le motif — la ligne de journal les porte —, puis re-publie le
+# registre en artefact « <nom>-rollback-<run> ». Il ne pousse rien sur main (protégée) et ne reconstruit rien.
+# Limite, dite telle quelle : le runner ne voit pas la production locale ; il agit sur l'état PUBLIÉ par la
+# chaîne. La production locale, elle, recule par le bouton de /pilotage (même fonction, même journal).
+# Visible dans l'onglet Actions seulement une fois ce fichier présent sur main.
+
+name: rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      acteur:
+        description: "Votre nom — un retour arrière n'est jamais anonyme"
+        required: true
+        type: string
+      motif:
+        description: "Pourquoi : l'alerte en cause (signal, valeur)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read          # lire les artefacts des runs de llmops.yml
+
+concurrency:
+  group: llmops-${{ github.ref }}   # même groupe que llmops.yml : jamais en même temps qu'une publication
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: "3.11"
+      - run: uv sync
+
+      - name: Dernier registre publié par la chaîne
+        id: registre
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LIGNE=$(gh api "repos/${{ github.repository }}/actions/artifacts?per_page=100" \
+            --jq '[.artifacts[] | select(.name | startswith("registry-")) | select(.expired | not)]
+                  | sort_by(.created_at) | last | "\(.name) \(.workflow_run.id)"')
+          NOM=${LIGNE% *}; RUN=${LIGNE#* }
+          if [ -z "$NOM" ] || [ "$NOM" = "null" ]; then echo "aucun registre publié : rien à annuler"; exit 1; fi
+          gh run download "$RUN" -n "$NOM" -D ops/registry-publie
+          echo "nom=$NOM" >> "$GITHUB_OUTPUT"
+          echo "Registre repris : $NOM (run $RUN)"; cat ops/registry-publie/index.json
+
+      - name: Retour arrière — humain, nommé, tracé
+        env:
+          REGISTRY_PATH: ops/registry-publie
+          ACTEUR: ${{ inputs.acteur }}      # passé par l'environnement, jamais interpolé dans le script
+          MOTIF: ${{ inputs.motif }}
+        run: |
+          uv run python -m ops.deploy rollback --acteur "$ACTEUR (GitHub Actions)" --motif "$MOTIF"
+          cat ops/registry-publie/index.json
+          tail -n 1 ops/registry-publie/journal.jsonl
+
+      - name: Registre après retour arrière
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.registre.outputs.nom }}-rollback-${{ github.run_id }}
+          path: ops/registry-publie/
+          if-no-files-found: error

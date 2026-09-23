@@ -51,6 +51,7 @@ from app.api_v2 import analyser_v2
 from app.llm_client import Bundle, LLMClient
 from app.telemetry import NoopSpanExporter, Telemetry, build_telemetry
 from ops.registry import MOTIF_VERSION, Registry
+from ops.seuils import charger_seuils
 
 RACINE = Path(__file__).resolve().parent.parent
 DOSSIER_CONTRATS = RACINE / "eval" / "contrats"
@@ -137,9 +138,9 @@ def evaluer(
     version: str,
     *,
     n_essais: int | None = None,
-    seuil: float = 0.75,
-    latence_max_ms: float = 8000.0,
-    cout_max_eur: float = 0.15,
+    seuil: float | None = None,
+    latence_max_ms: float | None = None,
+    cout_max_eur: float | None = None,
     contrats: Path = DOSSIER_CONTRATS,
     attendus: Path = CHEMIN_ATTENDUS,
     registry: Registry | None = None,
@@ -147,6 +148,12 @@ def evaluer(
     sous_ensemble: list[str] | None = None,
     historique: Path | None = CHEMIN_HISTORIQUE,
 ) -> Rapport:
+    # Brique 13 (Ch2) : un seuil non fourni vient de eval/thresholds.yml — jamais d'une valeur codée ici.
+    gate = charger_seuils()["gate"]
+    seuil = gate["rappel_min"] if seuil is None else seuil
+    latence_max_ms = gate["latence_p95_max_ms"] if latence_max_ms is None else latence_max_ms
+    cout_max_eur = gate["cout_moyen_max_eur"] if cout_max_eur is None else cout_max_eur
+
     bundle = charger_bundle(version, registry)
     client = LLMClient(bundle)
     tel = telemetry or build_telemetry(
@@ -257,10 +264,10 @@ def afficher(rapport: Rapport) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Gate d'évaluation Mardik")
     parser.add_argument("--version", default="v2")
-    parser.add_argument("--seuil", type=float, default=0.75)
+    parser.add_argument("--seuil", type=float, default=None, help="défaut : eval/thresholds.yml")
     parser.add_argument("--essais", type=int, default=None)
-    parser.add_argument("--latence-max-ms", type=float, default=8000)
-    parser.add_argument("--cout-max-eur", type=float, default=0.15)
+    parser.add_argument("--latence-max-ms", type=float, default=None)
+    parser.add_argument("--cout-max-eur", type=float, default=None)
     parser.add_argument("--contrats", default=None, help="liste c01,c02,… (défaut : tous)")
     args = parser.parse_args(argv)
     sous_ensemble = re.split(r"[,\s]+", args.contrats.strip()) if args.contrats else None

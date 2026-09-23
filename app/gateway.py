@@ -27,11 +27,12 @@ from __future__ import annotations
 import os
 import random
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.api_v1 import analyser_v1
-from app.api_v2 import analyser_v2
+from app.api_v2 import analyser_v2, capturer_si_peu_sur, nouveau_request_id
 from app.llm_client import ErreurLLM, LLMClient
 from app.telemetry import Telemetry, build_default_telemetry
 from ops.registry import Registry
@@ -52,6 +53,19 @@ def choisir_version(
     return active
 
 
+def pourcentage_effectif(idx: dict) -> tuple[int, str]:
+    """(pourcentage appliqué, source) — ``CANARY_PERCENT`` force la valeur du registre.
+
+    Vide = absent : ``CANARY_PERCENT=`` dans un .env ne doit ni planter (``int('')``)
+    ni forcer 0. Constaté le 22/09 : l'env forçait 10 % pendant que /gateway/etat
+    annonçait 50 % — les deux routes passent désormais par ici.
+    """
+    force = os.environ.get("CANARY_PERCENT", "").strip()
+    if force:
+        return int(force), "env:CANARY_PERCENT"
+    return int(idx.get("canary_percent", 0) or 0), "registre"
+
+
 def get_registry() -> Registry:
     return Registry()
 
@@ -63,24 +77,28 @@ def get_telemetry() -> Telemetry:
 @router.get("/gateway/etat")
 def etat(registry: Registry = Depends(get_registry)) -> dict:
     idx = registry.index()
+    pct, source = pourcentage_effectif(idx)
     return {
         "active": idx.get("active"),
         "canary": idx.get("canary"),
-        "canary_percent": idx.get("canary_percent", 0),
+        "canary_percent": pct,
+        "canary_percent_registre": int(idx.get("canary_percent", 0) or 0),
+        "source": source,
     }
 
 
-@router.post("/analyse")
+@router.post("/analyse", response_model=None)
 def analyse(
     requete: RequeteAnalyse,
     response: Response,
     registry: Registry = Depends(get_registry),
     telemetry: Telemetry = Depends(get_telemetry),
-) -> dict:
+) -> dict | JSONResponse:
+    rid = nouveau_request_id()
     idx = registry.index()
     active = idx.get("active")
     canary = idx.get("canary")
-    canary_percent = int(os.environ.get("CANARY_PERCENT", idx.get("canary_percent", 0)))
+    canary_percent, _ = pourcentage_effectif(idx)
 
     tirage = random.uniform(0, 100)
     version_servie = choisir_version(active, canary, canary_percent, tirage)
@@ -90,11 +108,17 @@ def analyse(
 
     try:
         if bundle.strategie == "map_reduce_clauses":
-            reponse = analyser_v2(requete.texte, client, telemetry)
+            reponse = analyser_v2(requete.texte, client, telemetry, request_id=rid)
+            capturer_si_peu_sur(requete.texte, reponse, telemetry)  # brique 17 (Ch2)
         else:
             reponse = analyser_v1(requete.texte, client, telemetry)
     except ErreurLLM as exc:
-        raise HTTPException(status_code=503, detail=f"fournisseur LLM indisponible : {exc}")
+        # Le frontend passe par ici : une panne reste explicite, signée et corrélable.
+        return JSONResponse(
+            status_code=503,
+            content={"detail": f"fournisseur LLM indisponible : {exc}", "request_id": rid},
+            headers={"X-Mardik-Version": version_servie},
+        )
 
     response.headers["X-Mardik-Version"] = version_servie
     return reponse.model_dump()

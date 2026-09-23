@@ -36,6 +36,10 @@ parametres:
                                    # vague, c07/c10/c12 = 4,8 à 5,9 s. Trafic client ~20 req/jour
                                    # (spec §4) : pas de risque de quota à ce volume. Sans effet sur un
                                    # Ollama local (OLLAMA_NUM_PARALLEL=1 sérialise, mesuré le 21/09).
+  seuils_libelle:                 # niveau de certitude affiché au juriste (conception Ch1, H6) :
+    haute: 0.8                    #   score global >= 0.8 → « haute » → valider
+    moyenne: 0.5                  #   >= 0.5 → « moyenne » → vérifier les clauses sous 0.7 ; sinon « basse »
+                                   # valeurs de travail, à ajuster au Chantier 2 sur les distributions observées
 
 schema_sortie:
   type: object

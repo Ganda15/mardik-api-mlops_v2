@@ -16,6 +16,9 @@ uv.lock
 # Env
 .env
 .env.local
+public.env
+admin.env
+ops/candidats.jsonl
 
 # IDE
 .vscode/

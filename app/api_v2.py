@@ -34,13 +34,15 @@ from __future__ import annotations
 
 import contextvars
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.llm_client import Bundle, ErreurLLM, LLMClient
-from app.pipeline.confiance import Clause, scorer
+from app.pipeline.confiance import Clause, libeller, scorer
 from app.pipeline.consolidation import consolider
 from app.pipeline.decoupage import Section, decouper
 from app.pipeline.extraction import extraire
@@ -65,12 +67,19 @@ class ClauseV2(BaseModel):
 class ReponseAnalyseV2(BaseModel):
     clauses: list[ClauseV2]
     confiance_globale: float
+    libelle: str  # niveau de certitude pour le juriste : haute / moyenne / basse (H6)
+    request_id: str  # corrélation réponse ↔ journaux ↔ trace (spec §2, champ additif)
     modele: str
     version: str
     sections: int
     appels_llm: int
     latence_ms: float
     cout_eur: float
+
+
+def nouveau_request_id() -> str:
+    """``req_`` + 12 caractères hexadécimaux : unique par requête, lisible au téléphone."""
+    return f"req_{uuid.uuid4().hex[:12]}"
 
 
 def get_bundle_v2() -> Bundle:
@@ -85,13 +94,17 @@ def get_telemetry() -> Telemetry:
     return build_default_telemetry()
 
 
-def analyser_v2(texte: str, client: LLMClient, telemetry: Telemetry) -> ReponseAnalyseV2:
+def analyser_v2(
+    texte: str, client: LLMClient, telemetry: Telemetry, request_id: str | None = None
+) -> ReponseAnalyseV2:
     bundle = client.bundle
+    rid = request_id or nouveau_request_id()
     taille_max = int(bundle.parametres.get("contexte_max_caracteres", 6000))
     debut = time.perf_counter()
 
     with telemetry.tracer.start_as_current_span("analyse.requete") as span:
         span.set_attribute("mardik.version", bundle.version)
+        span.set_attribute("mardik.request_id", rid)
         sections = decouper(texte, taille_max=taille_max)
         span.set_attribute("mardik.sections", len(sections))
 
@@ -122,7 +135,9 @@ def analyser_v2(texte: str, client: LLMClient, telemetry: Telemetry) -> ReponseA
                     erreur=True,
                 )
             )
-            telemetry.logger.error("analyse.echec", version=bundle.version, cause=str(exc))
+            telemetry.logger.error(
+                "analyse.echec", version=bundle.version, request_id=rid, cause=str(exc)
+            )
             raise
         finally:
             # cancel_futures : une panne sur la section 2 n'appelle (ne paie) pas les suivantes
@@ -151,6 +166,7 @@ def analyser_v2(texte: str, client: LLMClient, telemetry: Telemetry) -> ReponseA
         telemetry.logger.info(
             "analyse.terminee",
             version=bundle.version,
+            request_id=rid,
             latence_ms=round(latence, 1),
             clauses=len(clauses_notees),
             sections=len(sections),
@@ -162,6 +178,8 @@ def analyser_v2(texte: str, client: LLMClient, telemetry: Telemetry) -> ReponseA
             for c in clauses_notees
         ],
         confiance_globale=confiance_globale,
+        libelle=libeller(confiance_globale, bundle.parametres.get("seuils_libelle")),
+        request_id=rid,
         modele=bundle.modele,
         version=bundle.version,
         sections=len(sections),
@@ -171,13 +189,36 @@ def analyser_v2(texte: str, client: LLMClient, telemetry: Telemetry) -> ReponseA
     )
 
 
+def capturer_si_peu_sur(texte: str, reponse: "ReponseAnalyseV2", telemetry: Telemetry) -> None:
+    """Brique 17 (Ch2) : une analyse peu sûre devient un candidat du jeu d'évaluation (masqué).
+    Appelé par les routes, pas par ``analyser_v2`` : le gate d'évaluation ne doit rien capturer.
+    Une panne de capture ne casse jamais la réponse au juriste : elle est journalisée."""
+    try:
+        from ops.enrichissement import capturer
+
+        capturer(texte, request_id=reponse.request_id, version=reponse.version,
+                 score=reponse.confiance_globale, clauses=[c.type for c in reponse.clauses])
+    except Exception as exc:  # noqa: BLE001 — la capture est accessoire, la réponse ne l'est pas
+        telemetry.logger.warning("capture.echec", request_id=reponse.request_id, cause=str(exc))
+
+
 @router.post("/analyse", response_model=ReponseAnalyseV2)
 def analyse(
     requete: RequeteAnalyseV2,
+    response: Response,
     client: LLMClient = Depends(get_client_v2),
     telemetry: Telemetry = Depends(get_telemetry),
-) -> ReponseAnalyseV2:
+) -> ReponseAnalyseV2 | JSONResponse:
+    rid = nouveau_request_id()
     try:
-        return analyser_v2(requete.texte, client, telemetry)
+        reponse = analyser_v2(requete.texte, client, telemetry, request_id=rid)
     except ErreurLLM as exc:
-        raise HTTPException(status_code=503, detail=f"fournisseur LLM indisponible : {exc}")
+        # Succès comme échec, la réponse est signée (version) et corrélable (request_id).
+        return JSONResponse(
+            status_code=503,
+            content={"detail": f"fournisseur LLM indisponible : {exc}", "request_id": rid},
+            headers={"X-Mardik-Version": client.bundle.version},
+        )
+    capturer_si_peu_sur(requete.texte, reponse, telemetry)
+    response.headers["X-Mardik-Version"] = reponse.version
+    return reponse

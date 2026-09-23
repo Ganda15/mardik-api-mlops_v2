@@ -1,0 +1,46 @@
+# Seuils de DÉMONSTRATION — jamais utilisé en production. Chargé par MARDIK_SEUILS (jamais par le code),
+# conception Ch2 §4.2 : « requetes_min et jours_min abaissés par configuration, jamais par le code ».
+#
+# Seule différence avec eval/thresholds.yml : les temps d'attente (fenêtre d'observation, délai avant
+# promotion). Les seuils de QUALITÉ (gate, alerte de dérive, critères de promotion) sont identiques au
+# fichier réel — sinon la démonstration prouverait un système différent de celui livré.
+# Garde : tests/test_seuils_demo.py::test_la_demo_ne_touche_que_les_temps_d_attente_et_la_capture.
+
+version: 1
+
+gate:
+  rappel_min: 0.75
+  latence_p95_max_ms: 8000
+  cout_moyen_max_eur: 0.15
+
+fenetre:
+  requetes_min: 5               # démo : 5 au lieu de 30 — une fenêtre s'obtient en quelques requêtes
+  requetes: 50
+  jours: 2
+
+rollback_alerte:
+  part_score_bas_delta_max: 0.15
+  mediane_delta_min: -0.15
+  taux_erreur_max: 0.10
+  p95_ms_max: 8000
+
+promotion:
+  requetes_min: 5                # démo : 5 au lieu de 30
+  jours_min: 0                   # démo : pas d'attente — sinon il faudrait un jour entier au palier
+  p95_ms_max: 8000
+  taux_erreur_delta_max: 0.02
+  part_score_bas_delta_max: 0.05
+  mediane_delta_min: -0.05
+  cout_moyen_eur_max: 0.15
+  paliers: [10, 50, 100]
+  refus_consecutifs_alerte: 2
+
+capture:
+  score_global_max: 0.5
+
+signature:
+  score_median: 0.993
+  part_score_bas: 0.0
+  source: >-
+    Copié de eval/thresholds.yml (signature mesurée le 23/09 sur 8 analyses réelles saines) — fichier de
+    démonstration, seuls les temps d'attente changent, voir l'en-tête de ce fichier.

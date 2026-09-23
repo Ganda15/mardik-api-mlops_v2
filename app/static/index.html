@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mardik, analyse de contrats</title>
+<meta name="description" content="Analyse des clauses d'un contrat commercial, avec niveau de certitude et version qui a répondu.">
+<!--
+  Brique F2 (conception Ch1, H15) : page unique, sans dépendance externe.
+  Règle de sécurité : aucune donnée n'est jamais insérée comme HTML. Les extraits viennent
+  du contrat et du modèle ; tout passe par textContent / createElement (cf. tests/test_frontend.py).
+-->
+<style>
+  :root {
+    --papier: #f6f7f9;
+    --feuille: #ffffff;
+    --encre: #1b2330;
+    --encre-pale: #566173;
+    --filet: #d6dbe3;
+    --surligneur: #ffe46b;
+    --surligneur-texte: #1b2330;
+    --haute: #1f5e4a;
+    --moyenne: #8a5a00;
+    --basse: #8e2b2b;
+    --action: #1f3a66;
+    --action-texte: #ffffff;
+    --erreur-fond: #fbeeee;
+    --focus: #2f6fd6;
+    --serif: Cambria, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --papier: #11151c;
+      --feuille: #181d26;
+      --encre: #e6e9ef;
+      --encre-pale: #a3adbd;
+      --filet: #2e3643;
+      --surligneur: #5c4d0c;
+      --surligneur-texte: #fff6cc;
+      --haute: #6fc2a2;
+      --moyenne: #e0b050;
+      --basse: #ee8a8a;
+      --action: #8fb0e8;
+      --action-texte: #11151c;
+      --erreur-fond: #3a1f22;
+      --focus: #8fb0e8;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--papier);
+    color: var(--encre);
+    font: 16px/1.5 var(--sans);
+  }
+  .page { max-width: 52rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+  header.tete { display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap;
+                padding-bottom: 1rem; border-bottom: 1px solid var(--filet); }
+  header.tete h1 { margin: 0; font: 600 1.375rem/1.2 var(--serif); letter-spacing: .01em; }
+  header.tete p { margin: 0; color: var(--encre-pale); font-size: .9375rem; }
+
+  form { margin-top: 1.5rem; }
+  label.titre { display: block; font-weight: 600; margin-bottom: .25rem; }
+  .aide { margin: 0 0 .5rem; color: var(--encre-pale); font-size: .9375rem; }
+  textarea {
+    display: block; width: 100%; min-height: 14rem; resize: vertical;
+    padding: .75rem .875rem; border: 1px solid var(--filet); border-radius: 4px;
+    background: var(--feuille); color: var(--encre);
+    font: 1rem/1.55 var(--serif);
+  }
+  .sous-zone { display: flex; justify-content: space-between; align-items: center;
+               gap: .75rem; flex-wrap: wrap; margin-top: .5rem; }
+  .compteur { color: var(--encre-pale); font-size: .875rem; font-variant-numeric: tabular-nums; }
+
+  .bouton-fichier, button {
+    font: inherit; cursor: pointer; border-radius: 4px;
+  }
+  .bouton-fichier {
+    display: inline-block; padding: .375rem .75rem;
+    border: 1px solid var(--filet); background: var(--feuille); color: var(--encre);
+    font-size: .9375rem;
+  }
+  input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  input[type=file]:focus-visible + .bouton-fichier { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  fieldset { border: 0; padding: 0; margin: 1.25rem 0 0; }
+  legend { font-weight: 600; padding: 0; margin-bottom: .25rem; }
+  .choix { display: flex; flex-direction: column; gap: .25rem; }
+  .choix label { display: flex; gap: .5rem; align-items: baseline; }
+  .choix small { color: var(--encre-pale); }
+
+  .acces { margin-top: 1.25rem; }
+  input[type=password] {
+    width: 100%; max-width: 22rem; padding: .5rem .75rem;
+    border: 1px solid var(--filet); border-radius: 4px;
+    background: var(--feuille); color: var(--encre); font: inherit;
+  }
+
+  button[type=submit] {
+    margin-top: 1.25rem; padding: .625rem 1.25rem; border: 0;
+    background: var(--action); color: var(--action-texte); font-weight: 600;
+  }
+  button[disabled] { opacity: .6; cursor: progress; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  #etat { min-height: 1.5rem; margin: .75rem 0 0; color: var(--encre-pale);
+          font-variant-numeric: tabular-nums; }
+
+  #resultat { margin-top: 2rem; }
+  .invitation { color: var(--encre-pale); border-top: 1px solid var(--filet); padding-top: 1.5rem; }
+
+  /* Le verdict : le seul élément appuyé de la page. */
+  .verdict { border-top: 3px solid currentColor; padding-top: 1rem; }
+  .verdict.haute { color: var(--haute); }
+  .verdict.moyenne { color: var(--moyenne); }
+  .verdict.basse { color: var(--basse); }
+  .verdict.neutre { color: var(--encre-pale); }
+  .verdict h2 { margin: 0; font: 600 clamp(1.75rem, 5vw, 2.5rem)/1.15 var(--serif); }
+  .verdict p { margin: .375rem 0 0; font: 1.1875rem/1.45 var(--serif); color: var(--encre); }
+
+  dl.meta {
+    display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem;
+    margin: 1.25rem 0 0; font-size: .9375rem;
+  }
+  dl.meta dt { color: var(--encre-pale); }
+  dl.meta dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  dl.meta .ref { font-family: Consolas, "Cascadia Mono", monospace; }
+
+  h3.liste { margin: 2rem 0 .75rem; font-size: 1rem; font-weight: 600; }
+  ul.clauses { list-style: none; margin: 0; padding: 0; }
+  ul.clauses > li { padding: 1rem 0; border-top: 1px solid var(--filet); }
+  .ligne-clause { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+  .type { font-weight: 600; }
+  .conf { font-variant-numeric: tabular-nums; color: var(--encre-pale); white-space: nowrap; }
+  .a-verifier .conf { color: var(--encre); font-weight: 600; }
+  blockquote {
+    margin: .5rem 0 .375rem; padding: .125rem 0 .125rem .875rem;
+    border-left: 2px solid var(--filet);
+    font: 1rem/1.6 var(--serif); overflow-wrap: anywhere;
+  }
+  .a-verifier blockquote { border-left-color: var(--moyenne); }
+  .a-verifier mark { background: var(--surligneur); color: var(--surligneur-texte); padding: 0 .1em; }
+  .sections { color: var(--encre-pale); font-size: .875rem; }
+
+  ul.noms { margin: 1rem 0 0; padding-left: 1.25rem; }
+  .alerte-tronque { margin-top: 1rem; padding: .75rem 1rem; border-left: 3px solid var(--basse);
+                    background: var(--erreur-fond); }
+
+  .erreur { border-left: 3px solid var(--basse); background: var(--erreur-fond);
+            padding: 1rem 1.125rem; border-radius: 0 4px 4px 0; }
+  .erreur h2 { margin: 0 0 .25rem; font-size: 1.125rem; }
+  .erreur p { margin: .25rem 0 0; }
+  .erreur ul { margin: .5rem 0 0; padding-left: 1.25rem; }
+
+  @media (max-width: 30rem) {
+    .ligne-clause { flex-direction: column; gap: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="tete">
+    <h1>Mardik</h1>
+    <p>Analyse des clauses d'un contrat commercial</p>
+  </header>
+
+  <form id="formulaire" novalidate>
+    <label class="titre" for="texte">Texte du contrat</label>
+    <p class="aide" id="aide-texte">Collez le texte copié depuis la GED, ou chargez un fichier .txt.</p>
+    <textarea id="texte" name="texte" aria-describedby="aide-texte" spellcheck="false"></textarea>
+    <div class="sous-zone">
+      <span>
+        <input type="file" id="fichier" accept=".txt,text/plain">
+        <label class="bouton-fichier" for="fichier">Charger un fichier</label>
+      </span>
+      <span class="compteur" id="compteur" aria-live="polite">0 caractère</span>
+    </div>
+
+    <fieldset>
+      <legend>Version interrogée</legend>
+      <div class="choix">
+        <label><input type="radio" name="route" value="/analyse" checked>
+          <span>Production <small>la répartition v1 / v2 en vigueur</small></span></label>
+        <label><input type="radio" name="route" value="/v2/analyse">
+          <span>Version 2 directement <small>pour comparer</small></span></label>
+      </div>
+    </fieldset>
+
+    <div class="acces">
+      <label class="titre" for="cle">Code d'accès</label>
+      <p class="aide" id="aide-cle">Demandé seulement sur le lien public. Il reste dans cet onglet et disparaît à sa fermeture.</p>
+      <input type="password" id="cle" autocomplete="off" aria-describedby="aide-cle">
+    </div>
+
+    <button type="submit" id="bouton">Analyser le contrat</button>
+    <p id="etat" role="status" aria-live="polite"></p>
+  </form>
+
+  <section id="resultat" aria-live="polite">
+    <p class="invitation">Collez un contrat ou chargez un fichier, puis lancez l'analyse. Le résultat indique
+      le niveau de certitude, les clauses trouvées avec l'extrait exact, et la version qui a répondu.</p>
+  </section>
+</div>
+
+<script>
+"use strict";
+
+// H6 : ce que chaque niveau demande au juriste. Une règle de décision, pas une couleur.
+const REGLES = {
+  haute: ["Certitude haute.", "Vous pouvez valider l'analyse."],
+  moyenne: ["Certitude moyenne.", "Vérifiez les clauses surlignées : leur confiance est sous 0,7."],
+  basse: ["Certitude basse.", "Relisez entièrement le contrat : l'analyse ne suffit pas."],
+};
+const SEUIL_A_VERIFIER = 0.7;   // H6 : en certitude moyenne, vérifier les clauses sous ce seuil
+const DELAI_MAX_MS = 120000;    // un contrat long prend ~5 à 10 s ; au-delà de 2 min, on abandonne
+
+const $ = (id) => document.getElementById(id);
+const nombre = (v, dec) => v.toLocaleString("fr-FR", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+
+// Construit un élément sans jamais interpréter de HTML : les enfants texte deviennent des nœuds texte.
+function el(balise, attributs, ...enfants) {
+  const n = document.createElement(balise);
+  for (const [cle, valeur] of Object.entries(attributs || {})) {
+    if (valeur !== undefined && valeur !== null) n.setAttribute(cle, valeur);
+  }
+  for (const e of enfants.flat()) {
+    if (e === null || e === undefined || e === false) continue;
+    n.append(e instanceof Node ? e : document.createTextNode(String(e)));
+  }
+  return n;
+}
+
+function majCompteur() {
+  const n = $("texte").value.length;
+  $("compteur").textContent = n.toLocaleString("fr-FR") + (n > 1 ? " caractères" : " caractère");
+}
+$("texte").addEventListener("input", majCompteur);
+
+// Le code d'accès reste dans l'onglet (sessionStorage), jamais dans une URL ni sur le disque.
+try { $("cle").value = sessionStorage.getItem("mardik-cle") || ""; } catch (_) { /* stockage indisponible : on redemandera */ }
+$("cle").addEventListener("input", () => {
+  try { sessionStorage.setItem("mardik-cle", $("cle").value); } catch (_) { /* sans effet */ }
+});
+
+$("fichier").addEventListener("change", () => {
+  const f = $("fichier").files[0];
+  if (!f) return;
+  const lecteur = new FileReader();
+  lecteur.onload = () => { $("texte").value = String(lecteur.result); majCompteur(); $("texte").focus(); };
+  lecteur.onerror = () => afficherErreur("Le fichier n'a pas pu être lu.", ["Vérifiez qu'il s'agit d'un fichier texte (.txt)."]);
+  lecteur.readAsText(f, "UTF-8");
+});
+
+// replaceChildren(null) écrirait le mot « null » : un bloc absent (ex. pas d'alerte de troncature) est filtré.
+function afficher(...noeuds) { $("resultat").replaceChildren(...noeuds.filter(Boolean)); }
+
+function afficherErreur(titre, lignes, reference) {
+  afficher(el("div", { class: "erreur", role: "alert" },
+    el("h2", null, titre),
+    lignes.length === 1 ? el("p", null, lignes[0]) : el("ul", null, lignes.map((l) => el("li", null, l))),
+    reference ? el("p", null, "Référence à transmettre en cas de problème : ", el("span", { class: "ref" }, reference)) : null,
+  ));
+}
+
+// 422 : FastAPI renvoie une liste ; on la traduit pour le juriste, sans jargon de validation.
+function lignes422(detail) {
+  if (!Array.isArray(detail)) return [String(detail)];
+  return detail.map((d) => {
+    const champ = (d.loc || []).slice(-1)[0];
+    if (d.type === "string_too_short") return "Le contrat doit contenir au moins 20 caractères.";
+    if (d.type === "missing") return "Le texte du contrat est vide.";
+    return (champ ? champ + " : " : "") + (d.msg || "valeur invalide");
+  });
+}
+
+function afficherV2(corps, version) {
+  const niveau = REGLES[corps.libelle] ? corps.libelle : null;
+  const [titre, regle] = niveau ? REGLES[niveau] : ["Niveau de certitude inconnu.", "Relisez entièrement le contrat."];
+  const aVerifier = (c) => niveau !== "haute" && c.confiance < SEUIL_A_VERIFIER;
+
+  const verdict = el("div", { class: "verdict " + (niveau || "neutre") },
+    el("h2", null, titre),
+    el("p", null, regle),
+  );
+  const meta = el("dl", { class: "meta" },
+    el("dt", null, "Score global"), el("dd", null, nombre(corps.confiance_globale, 2) + " sur 1"),
+    el("dt", null, "Version"), el("dd", null, version),
+    el("dt", null, "Modèle"), el("dd", null, corps.modele),
+    el("dt", null, "Sections lues"), el("dd", null, corps.sections + " sur " + corps.sections + ", sans troncature"),
+    el("dt", null, "Durée"), el("dd", null, nombre(corps.latence_ms / 1000, 1) + " s"),
+    el("dt", null, "Coût"), el("dd", null, nombre(corps.cout_eur, 3) + " €"),
+    el("dt", null, "Référence"), el("dd", { class: "ref" }, corps.request_id),
+  );
+
+  const n = corps.clauses.length;
+  const titreListe = el("h3", { class: "liste" }, n === 0 ? "Aucune clause trouvée" : n + (n > 1 ? " clauses trouvées" : " clause trouvée"));
+  const liste = el("ul", { class: "clauses" }, corps.clauses.map((c) => {
+    const verifier = aVerifier(c);
+    return el("li", { class: verifier ? "a-verifier" : null },
+      el("div", { class: "ligne-clause" },
+        el("span", { class: "type" }, c.type.charAt(0).toUpperCase() + c.type.slice(1)),
+        el("span", { class: "conf" }, (verifier ? "à vérifier, " : "") + "confiance " + nombre(c.confiance, 2)),
+      ),
+      el("blockquote", null, verifier ? el("mark", null, c.extrait) : c.extrait),
+      el("div", { class: "sections" }, (c.sections.length > 1 ? "Sections " : "Section ") + c.sections.join(", ")),
+    );
+  }));
+  afficher(verdict, meta, titreListe, liste);
+}
+
+function afficherV1(corps, version) {
+  const verdict = el("div", { class: "verdict neutre" },
+    el("h2", null, "Réponse de la version 1."),
+    el("p", null, "La version 1 ne donne ni niveau de certitude ni extrait : relisez les clauses concernées."),
+  );
+  const meta = el("dl", { class: "meta" },
+    el("dt", null, "Version"), el("dd", null, version),
+    el("dt", null, "Modèle"), el("dd", null, corps.modele),
+  );
+  const alerte = corps.tronque
+    ? el("p", { class: "alerte-tronque", role: "alert" }, "Le contrat a été tronqué : les clauses de fin n'ont pas été lues.")
+    : null;
+  const n = corps.clauses.length;
+  afficher(verdict, meta, alerte,
+    el("h3", { class: "liste" }, n === 0 ? "Aucune clause trouvée" : n + (n > 1 ? " clauses trouvées" : " clause trouvée")),
+    el("ul", { class: "noms" }, corps.clauses.map((c) => el("li", null, c))));
+}
+
+$("formulaire").addEventListener("submit", async (evt) => {
+  evt.preventDefault();
+  const texte = $("texte").value;
+  const route = document.querySelector('input[name="route"]:checked').value;
+  const bouton = $("bouton");
+  const debut = Date.now();
+  const minuteur = setInterval(() => {
+    $("etat").textContent = "Analyse en cours, " + Math.round((Date.now() - debut) / 1000) + " s";
+  }, 1000);
+  const arret = new AbortController();
+  const garde = setTimeout(() => arret.abort(), DELAI_MAX_MS);
+
+  bouton.disabled = true;
+  bouton.textContent = "Analyse en cours";
+  $("etat").textContent = "Analyse en cours";
+
+  try {
+    const r = await fetch(route, {
+      method: "POST",
+      headers: Object.assign({ "Content-Type": "application/json" },
+                             $("cle").value.trim() ? { "X-API-Key": $("cle").value.trim() } : {}),
+      body: JSON.stringify({ texte }),
+      signal: arret.signal,
+    });
+    let corps = null;
+    try { corps = await r.json(); } catch (_) { corps = null; }
+    const version = r.headers.get("X-Mardik-Version") || (corps && corps.version) || "inconnue";
+
+    if (r.ok && corps) {
+      if (corps.clauses.length && typeof corps.clauses[0] === "string") afficherV1(corps, version);
+      else if (!corps.clauses.length && corps.libelle === undefined) afficherV1(corps, version);
+      else afficherV2(corps, version);
+      $("etat").textContent = "Analyse terminée en " + nombre((Date.now() - debut) / 1000, 1) + " s.";
+    } else if (r.status === 401) {
+      afficherErreur("Code d'accès refusé.",
+        ["Saisissez le code d'accès communiqué avec le lien, puis relancez l'analyse."]);
+      $("etat").textContent = "";
+      $("cle").focus();
+    } else if (r.status === 429) {
+      afficherErreur("Le budget de la démonstration est atteint.",
+        [(corps && corps.detail ? corps.detail + ". " : "") + "Réessayez demain, ou prévenez l'équipe technique."]);
+      $("etat").textContent = "";
+    } else if (r.status === 422) {
+      afficherErreur("Le texte envoyé n'est pas analysable.", lignes422(corps && corps.detail));
+      $("etat").textContent = "";
+    } else if (r.status === 503) {
+      afficherErreur("Le service d'analyse est indisponible.",
+        ["Le fournisseur du modèle ne répond pas. Réessayez dans quelques minutes ; si cela persiste, prévenez l'équipe technique."],
+        corps && corps.request_id);
+      $("etat").textContent = "";
+    } else {
+      afficherErreur("L'analyse a échoué (code " + r.status + ").",
+        [corps && corps.detail ? String(corps.detail) : "Réponse inattendue du serveur."],
+        corps && corps.request_id);
+      $("etat").textContent = "";
+    }
+  } catch (e) {
+    const abandon = e && e.name === "AbortError";
+    afficherErreur(abandon ? "L'analyse a pris plus de 2 minutes." : "Le serveur ne répond pas.",
+      [abandon ? "Elle a été abandonnée. Réessayez ; si cela persiste, prévenez l'équipe technique."
+               : "Vérifiez votre connexion, puis réessayez."]);
+    $("etat").textContent = "";
+  } finally {
+    clearInterval(minuteur);
+    clearTimeout(garde);
+    bouton.disabled = false;
+    bouton.textContent = "Analyser le contrat";
+  }
+});
+</script>
+</body>
+</html>

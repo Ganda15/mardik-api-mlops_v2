@@ -120,7 +120,7 @@ jobs:
       - run: uv sync
       - name: Gate d'évaluation (MOCK=on en CI — mécanique du gate, pas les vrais chiffres)
         id: gate
-        run: uv run python -m eval.run_eval --version v2 --seuil 0.75
+        run: uv run python -m eval.run_eval --version v2   # seuils : eval/thresholds.yml (Ch2, brique 13)
       - name: Prochaine version (MINOR si le filtre de chemin a matché, sinon PATCH)
         id: version
         run: |
@@ -194,7 +194,7 @@ jobs:
           python-version: "3.11"
       - run: uv sync
       - name: Étiqueter la version dans le registre — REFUSE si le gate a échoué
-        run: uv run python -m ops.deploy publier "$VERSION" --bundle v2 --seuil 0.75
+        run: uv run python -m ops.deploy publier "$VERSION" --bundle v2
       - name: Tag git — immuable (git refuse d'écraser un tag existant sans -f)
         run: |
           git config user.name "llmops[bot]"

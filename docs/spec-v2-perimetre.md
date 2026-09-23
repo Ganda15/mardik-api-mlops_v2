@@ -25,6 +25,11 @@
 `{"clauses": [{"type", "extrait", "confiance", "sections"}], "confiance_globale", "modele", "version", "sections", "appels_llm",
 "latence_ms", "cout_eur"}`. Champs additifs prévus par la conception (non testés par le dépôt, ajoutés sans casser la forme) :
 `request_id`, libellé du niveau de certitude, en-tête de version sur la réponse.
+**Constaté le 23/09 : seul l'en-tête existait, et seulement sur la gateway. Écrits le 23/09 (brique F1)** :
+`libelle` (`haute` / `moyenne` / `basse`, bornes H6 lues dans `parametres.seuils_libelle` du bundle), `request_id`
+(`req_` + 12 hexa, dans la réponse 200 et la 503, dans les journaux et sur le span `analyse.requete`), en-tête
+`X-Mardik-Version` sur `/v2` (succès et 503). Un `422` ne porte pas de `request_id` : il est produit avant tout journal et
+toute trace, il n'y a rien à corréler. `/v1` ne gagne aucun champ (test de garde).
 
 ## 3. Contraintes (ce qui doit rester vrai)
 
@@ -77,6 +82,7 @@ Deux critères ajoutés par la conception, sans test fourni — à écrire :
 | Note du gate | F1 | rappel (imposé) + précision rapportée | `eval/run_eval.py` |
 | Rollback | manuel | manuel, **sans** découpage canary / actif | formateur, 21/09 |
 | Architecture | trois conteneurs derrière un routeur | un processus, gateway en interne lisant le registre à chaque requête | `app/gateway.py`, `docker-compose.yml` |
+| En-tête de version | `X-Mardik-Release`, sur toutes les réponses, `/v1` comprise | `X-Mardik-Version`, sur `/v2` et la gateway ; `/v1` inchangée | nom imposé par le test d'acceptance fourni (`test_observabilite.py`) ; `/v1` : exigence 2 du CTO, aucun ajout même additif |
 
 Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md` du dossier du brief (§D quater).
 
@@ -104,13 +110,43 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 9. `app/gateway.py` — `choisir_version` (fonction pure), `GET /gateway/etat`, `POST /analyse` (routage canary v1/v2). ✅
 10. `ops/dashboard.py` — `resume` (agrégats par version), `rendre_texte`, `rendre_html`.
 11. `.github/workflows/llmops.yml` — gates, build, publication, canary ; filtre de chemin pour le gate payant. ✅
+    **Exécutée pour de vrai le 22/09** (PR #1 puis fusion sur `main`, run 35715784616, 7/7 jobs verts) après correction de
+    4 défauts trouvés à la relecture (registre éphémère sur le runner, version calculée depuis des dossiers absents, job canary
+    sans le registre publié, image jamais poussée, `GITHUB_TOKEN` en lecture seule). Traces : image
+    `ghcr.io/ganda15/mardik-api-mlops_v2:v2.0.0` (publique), tag git `v2.0.0` annoté, artefacts `registry-v2.0.0` et
+    `registry-v2.0.0-canary` (`index.json` : active v1.0.0, canary v2.0.0 à 10 %). Réserve : le manifeste publié porte
+    `modele: modele-ci` et `note_eval: 1.0` (environnement CI, `MOCK=on`), pas le vrai modèle ni la vraie note.
 12. `app/api_v2.py` — sections analysées en parallèle (`parallelisme` du bundle, pool borné, ordre conservé, spans imbriqués). ✅
     Ajoutée le 21/09 après la mesure réelle ci-dessous ; **juste chez un fournisseur qui sert plusieurs requêtes à la fois, sans
     effet (et même nuisible : 503) sur un Ollama local à `OLLAMA_NUM_PARALLEL=1`**.
 
 **Les 12 briques sont faites.** `chantier1/dev` : 19 commits, 50 tests, 10/10 tests d'acceptance du brief verts,
 `ruff check` propre. Reste hors de cette liste : `docs/exploitation.md` (runbook, 7 sections, vide) et le frontend
-(livrable N12, jamais décidé).
+(livrable N12, jamais décidé). *(État du 21/09. Le runbook a été écrit le 22/09 ; le frontend, ci-dessous.)*
+
+**Ajoutées le 23/09, décision d'Era — le frontend avant le Chantier 2** (numérotées F pour ne pas décaler les briques 13–16
+du Chantier 2) :
+
+- **F1.** `app/api_v2.py`, `app/gateway.py`, `app/pipeline/confiance.py` — les champs additifs de §2 que le frontend affiche :
+  `libelle`, `request_id`, `X-Mardik-Version`. ✅ 16 tests (`tests/test_api_v2_champs_frontend.py`).
+- **F2.** `app/static/index.html`, servie sur `GET /` par `app/main.py` — la page unique de H15 : coller ou charger un contrat,
+  choisir la route (production = gateway, ou v2 directe), afficher le niveau de certitude **avec sa règle de décision**, le
+  score, les clauses et leur extrait (surligné sous 0,7), la version qui a répondu, le `request_id`, la durée et le coût ;
+  rend aussi une réponse v1 (liste de clauses, alerte de troncature) et les erreurs 422 / 503 en français. Aucune ressource
+  externe, aucun HTML construit depuis les données. ✅ 5 tests (`tests/test_frontend.py`) + vérification dans un navigateur
+  (fichier chargé, réponse v2, réponse v1, 422, largeur mobile, mode sombre, console sans erreur) — un défaut trouvé ainsi
+  (le mot « null » affiché sous une réponse v1) et corrigé. **Limite** : le JavaScript de la page n'a pas de test automatisé,
+  seulement cette vérification manuelle outillée.
+- **F3.** `app/securite.py`, branché dans `app/main.py` — **décision d'Era du 23/09 : le lien public passe par un tunnel depuis
+  son PC (option C)**. Une page publique qui appelle Azure = un budget que n'importe qui peut dépenser, donc deux gardes, actives
+  seulement sur l'instance lancée avec leur variable (jamais dans `.env`) : `MARDIK_API_KEY` → chaque POST exige `X-API-Key`
+  (conception Ch1 §2.3), `401` sinon ; `MARDIK_BUDGET_JOUR_EUR` → `429` au-delà du coût des 24 dernières heures (lu dans les
+  `Mesure`). Les GET restent ouverts (la page doit se charger). Refus décidés avant tout appel au modèle : ils ne coûtent rien.
+  La page porte un champ « Code d'accès » (gardé dans l'onglet, `sessionStorage`) et traduit `401` / `429`. ✅ 13 tests
+  (`tests/test_securite_instance_publique.py`, +1 dans `tests/test_frontend.py`) ; `conftest.py` retire les deux variables
+  (l'app charge `.env`) ; vérifié dans un navigateur, un défaut trouvé ainsi et corrigé (montants arrondis à 2 décimales :
+  0,006 € et 0,005 € s'affichaient tous deux « 0.01 »). **Limite** : un tunnel n'est pas un hébergement — le lien meurt quand
+  le PC s'éteint, et son adresse change à chaque lancement.
 
 **La question de §3 (« taille de section »), mesurée deux fois le 21/09 — sur deux fournisseurs différents :**
 

@@ -55,3 +55,21 @@ def _extrait_verifie(extrait: str, texte: str) -> bool:
     """
     extrait = extrait.strip()
     return bool(extrait) and extrait in texte
+
+
+# Conception Ch1, H6 : les bornes du « niveau de certitude ». Elles vivent dans le bundle
+# (``parametres.seuils_libelle``, configuration versionnée) ; ce défaut ne sert qu'aux
+# bundles publiés avant l'ajout du champ (v2.0.0 dans le registre).
+SEUILS_LIBELLE_DEFAUT = {"haute": 0.8, "moyenne": 0.5}
+
+
+def libeller(score: float, seuils: dict | None = None) -> str:
+    """Le niveau de certitude pour le juriste : ``haute`` >= borne haute, ``moyenne`` >= borne
+    moyenne, sinon ``basse``. Une règle de décision, pas une couleur : haute → valider,
+    moyenne → vérifier les clauses sous 0,7, basse → relire entièrement (H6)."""
+    bornes = seuils or SEUILS_LIBELLE_DEFAUT
+    if score >= bornes["haute"]:
+        return "haute"
+    if score >= bornes["moyenne"]:
+        return "moyenne"
+    return "basse"

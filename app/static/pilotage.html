@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mardik, pilotage</title>
+<meta name="description" content="Signaux de production par version, alertes, journal de pilotage et retour arrière.">
+<!--
+  Brique 16 (Chantier 2). Même règle que la page d'analyse : aucune donnée n'est insérée comme HTML
+  (textContent / createElement seulement), aucune ressource externe.
+  Le retour arrière est une décision humaine (CTO) : nom obligatoire, confirmation, trace au journal.
+-->
+<style>
+  :root {
+    --papier: #f6f7f9; --feuille: #ffffff; --encre: #1b2330; --encre-pale: #566173; --filet: #d6dbe3;
+    --haute: #1f5e4a; --moyenne: #8a5a00; --basse: #8e2b2b; --action: #1f3a66; --action-texte: #ffffff;
+    --alerte-fond: #fbeeee; --focus: #2f6fd6;
+    --serif: Cambria, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --papier: #11151c; --feuille: #181d26; --encre: #e6e9ef; --encre-pale: #a3adbd; --filet: #2e3643;
+      --haute: #6fc2a2; --moyenne: #e0b050; --basse: #ee8a8a; --action: #8fb0e8; --action-texte: #11151c;
+      --alerte-fond: #3a1f22; --focus: #8fb0e8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--papier); color: var(--encre); font: 16px/1.5 var(--sans); }
+  .page { max-width: 64rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  header.tete { display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap;
+                padding-bottom: 1rem; border-bottom: 1px solid var(--filet); }
+  header.tete h1 { margin: 0; font: 600 1.375rem/1.2 var(--serif); }
+  header.tete p { margin: 0; color: var(--encre-pale); font-size: .9375rem; }
+  header.tete a { margin-left: auto; color: var(--action); font-size: .9375rem; }
+  h2 { font: 600 1.125rem/1.3 var(--sans); margin: 2rem 0 .75rem; }
+  .aide { color: var(--encre-pale); font-size: .9375rem; margin: 0 0 .75rem; }
+
+  #banniere { margin-top: 1.5rem; }
+  .alerte { border-left: 4px solid var(--basse); background: var(--alerte-fond); padding: 1rem 1.125rem;
+            border-radius: 0 4px 4px 0; }
+  .alerte h2 { margin: 0 0 .25rem; color: var(--basse); font: 600 1.375rem/1.25 var(--serif); }
+  .alerte ul { margin: .5rem 0 0; padding-left: 1.25rem; }
+  .calme { border-left: 4px solid var(--haute); padding: .75rem 1.125rem; background: var(--feuille); }
+
+  .etat-routage { font-size: 1rem; margin: 1rem 0 0; }
+  .table-defile { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .9375rem; font-variant-numeric: tabular-nums; }
+  th, td { padding: .5rem .625rem; border-bottom: 1px solid var(--filet); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--encre-pale); font-weight: 600; }
+  .insuff { color: var(--moyenne); }
+
+  form { background: var(--feuille); border: 1px solid var(--filet); border-radius: 4px; padding: 1rem 1.125rem; }
+  label { display: block; font-weight: 600; margin: .75rem 0 .25rem; }
+  label:first-of-type { margin-top: 0; }
+  input[type=text], input[type=password] { width: 100%; max-width: 26rem; padding: .5rem .75rem; font: inherit;
+    border: 1px solid var(--filet); border-radius: 4px; background: var(--papier); color: var(--encre); }
+  button { display: block; margin-top: 1rem; padding: .625rem 1.25rem; border: 0; border-radius: 4px; cursor: pointer;
+           background: var(--basse); color: #fff; font: 600 1rem var(--sans); }
+  button[disabled] { opacity: .6; cursor: progress; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  #resultat-rollback { margin: .75rem 0 0; }
+  .ok { color: var(--haute); } .ko { color: var(--basse); }
+
+  ol.journal { list-style: none; margin: 0; padding: 0; }
+  ol.journal li { padding: .625rem 0; border-bottom: 1px solid var(--filet); }
+  .quand { color: var(--encre-pale); font-size: .875rem; font-variant-numeric: tabular-nums; }
+  .evt { font-weight: 600; }
+  .evt.alerte-evt, .evt.rollback-evt { color: var(--basse); }
+  .evt.promotion-evt { color: var(--haute); }
+  .detail { color: var(--encre-pale); font-size: .9375rem; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="tete">
+    <h1>Mardik</h1>
+    <p>Pilotage de la production</p>
+    <a href="/">Analyser un contrat</a>
+  </header>
+
+  <section id="banniere" aria-live="polite"></section>
+  <p class="etat-routage" id="routage"></p>
+
+  <h2>Signaux par version</h2>
+  <p class="aide">Fenêtre : les 50 dernières requêtes ou les 2 derniers jours. Sous 30 requêtes, aucune décision n'est prise.
+    Rafraîchi toutes les 15 secondes.</p>
+  <div class="table-defile">
+    <table>
+      <thead><tr><th>Version</th><th>Requêtes</th><th>État</th><th>Latence P95</th><th>Erreurs</th>
+        <th>Coût moyen</th><th>Scores &lt; 0,5</th><th>Médiane du score</th><th>Trafic</th></tr></thead>
+      <tbody id="signaux"></tbody>
+    </table>
+  </div>
+
+  <h2>Retour arrière</h2>
+  <p class="aide">Une décision humaine : le nom est obligatoire et tout est écrit au journal, avec l'alerte en cours.</p>
+  <form id="form-rollback" novalidate>
+    <label for="acteur">Votre nom</label>
+    <input type="text" id="acteur" autocomplete="name" required>
+    <label for="commentaire">Pourquoi (facultatif)</label>
+    <input type="text" id="commentaire">
+    <label for="jeton">Jeton d'administration</label>
+    <input type="password" id="jeton" autocomplete="off">
+    <button type="submit" id="bouton-rollback">Rollback</button>
+    <p id="resultat-rollback" role="status"></p>
+  </form>
+
+  <h2>Journal de pilotage</h2>
+  <ol class="journal" id="journal"></ol>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const fr = (v, d) => Number(v).toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const NOMS = {
+  score_median: "médiane du score", part_score_bas: "part des scores < 0,5", taux_erreur: "taux d'erreur",
+  latence_p95_ms: "latence P95", cout_moyen_eur: "coût moyen", refus_consecutifs: "refus de promotion consécutifs",
+};
+const nom = (s) => NOMS[s] || s || "";
+const quand = (iso) => { const d = new Date(iso); return isNaN(d) ? (iso || "") : d.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "medium" }); };
+
+function el(balise, attributs, ...enfants) {
+  const n = document.createElement(balise);
+  for (const [k, v] of Object.entries(attributs || {})) if (v !== undefined && v !== null) n.setAttribute(k, v);
+  for (const e of enfants.flat()) {
+    if (e === null || e === undefined || e === false) continue;
+    n.append(e instanceof Node ? e : document.createTextNode(String(e)));
+  }
+  return n;
+}
+
+function valeurLisible(signal, v) {
+  if (v === null || v === undefined) return "—";
+  if (signal === "latence_p95_ms") return fr(v / 1000, 1) + " s";
+  if (signal === "taux_erreur" || signal === "part_score_bas") return fr(v * 100, 1) + " %";
+  if (signal === "cout_moyen_eur") return fr(v, 3) + " €";
+  if (signal === "refus_consecutifs") return String(v);
+  return fr(v, 3);
+}
+
+function afficherEtat(e) {
+  const alertes = e.alertes || [];
+  $("banniere").replaceChildren(alertes.length
+    ? el("div", { class: "alerte", role: "alert" },
+        el("h2", null, alertes.length > 1 ? "Alertes en cours" : "Alerte en cours"),
+        el("p", null, "Le watcher a détecté une dérive. Il ne recule pas seul : décidez ci-dessous."),
+        el("ul", null, alertes.map((a) => el("li", null,
+          a.version + " : " + nom(a.signal) + " à " + valeurLisible(a.signal, a.valeur) +
+          ", seuil " + valeurLisible(a.signal, a.seuil) +
+          (a.fenetre ? " (" + a.fenetre.requetes + " requêtes)" : "") + ", " + quand(a.date)))))
+    : el("p", { class: "calme" }, "Aucune alerte en cours."));
+
+  $("routage").replaceChildren(
+    "Version active : ", el("strong", null, e.active || "aucune"),
+    e.canary ? " · canary : " : "", e.canary ? el("strong", null, e.canary + " à " + e.canary_percent + " %") : "");
+
+  $("bouton-rollback").textContent = e.canary
+    ? "Rollback : retirer le canary " + e.canary
+    : "Rollback : revenir à la version précédente";
+
+  const lignes = Object.entries(e.versions || {}).map(([version, s]) => el("tr", null,
+    el("td", null, version + (version === e.active ? " (active)" : version === e.canary ? " (canary)" : "")),
+    el("td", null, s.requetes),
+    el("td", { class: s.etat === "ok" ? null : "insuff" }, s.etat === "ok" ? "ok" : "données insuffisantes"),
+    el("td", null, valeurLisible("latence_p95_ms", s.latence_p95_ms)),
+    el("td", null, valeurLisible("taux_erreur", s.taux_erreur)),
+    el("td", null, valeurLisible("cout_moyen_eur", s.cout_moyen_eur)),
+    el("td", null, valeurLisible("part_score_bas", s.part_score_bas)),
+    el("td", null, valeurLisible("score_median", s.score_median)),
+    el("td", null, fr(s.trafic_pct, 1) + " %")));
+  $("signaux").replaceChildren(...(lignes.length ? lignes
+    : [el("tr", null, el("td", { colspan: "9" }, "Aucun trafic mesuré pour l'instant."))]));
+}
+
+function afficherJournal(lignes) {
+  $("journal").replaceChildren(...lignes.map((j) => {
+    const details = [];
+    if (j.version) details.push(j.version);
+    if (j.signal) details.push(nom(j.signal) + " " + valeurLisible(j.signal, j.valeur) + " (seuil " + valeurLisible(j.signal, j.seuil) + ")");
+    if (j.palier !== undefined) details.push("palier " + j.palier + " %");
+    if (j.acteur) details.push("par " + j.acteur);
+    if (j.commentaire) details.push("« " + j.commentaire + " »");
+    if (j.alerte && j.alerte.signal) details.push("suite à l'alerte " + nom(j.alerte.signal));
+    return el("li", null,
+      el("span", { class: "quand" }, quand(j.date) + "  "),
+      el("span", { class: "evt " + j.evenement + "-evt" }, j.evenement),
+      el("div", { class: "detail" }, details.join(" · ")));
+  }));
+}
+
+async function rafraichir() {
+  try {
+    const [e, j] = await Promise.all([
+      fetch("/pilotage/etat").then((r) => r.json()),
+      fetch("/pilotage/journal?limite=20").then((r) => r.json()),
+    ]);
+    afficherEtat(e);
+    afficherJournal(j);
+  } catch (_) {
+    $("banniere").replaceChildren(el("p", { class: "alerte", role: "alert" }, "Le serveur ne répond pas : les signaux affichés peuvent être anciens."));
+  }
+}
+
+try { $("jeton").value = sessionStorage.getItem("mardik-admin") || ""; } catch (_) { /* stockage indisponible */ }
+$("jeton").addEventListener("input", () => { try { sessionStorage.setItem("mardik-admin", $("jeton").value); } catch (_) { /* sans effet */ } });
+
+$("form-rollback").addEventListener("submit", async (evt) => {
+  evt.preventDefault();
+  const acteur = $("acteur").value.trim();
+  const sortie = $("resultat-rollback");
+  if (!acteur) { sortie.className = "ko"; sortie.textContent = "Saisissez votre nom : un retour arrière n'est jamais anonyme."; $("acteur").focus(); return; }
+  if (!window.confirm($("bouton-rollback").textContent + " ?\nCette décision sera écrite au journal à votre nom.")) return;
+  const bouton = $("bouton-rollback");
+  bouton.disabled = true;
+  try {
+    const r = await fetch("/pilotage/rollback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Admin-Token": $("jeton").value.trim() },
+      body: JSON.stringify({ acteur, commentaire: $("commentaire").value.trim() }),
+    });
+    let corps = null; try { corps = await r.json(); } catch (_) { corps = null; }
+    if (r.status === 201) {
+      sortie.className = "ok";
+      sortie.textContent = "Retour arrière effectué et tracé au journal, le " + (corps && corps.date ? quand(corps.date) : "à l'instant") + ".";
+    } else {
+      sortie.className = "ko";
+      const messages = { 401: "Jeton d'administration refusé.", 403: "Retour arrière par la page désactivé : aucun jeton d'administration n'est configuré sur ce serveur.",
+                         409: "Rien à annuler : aucune version précédente connue.", 422: "Votre nom est obligatoire." };
+      sortie.textContent = messages[r.status] || ("Refusé (code " + r.status + ")" + (corps && corps.detail ? " : " + corps.detail : "."));
+    }
+  } catch (_) {
+    sortie.className = "ko"; sortie.textContent = "Le serveur ne répond pas : rien n'a été modifié.";
+  } finally {
+    bouton.disabled = false;
+    rafraichir();
+  }
+});
+
+rafraichir();
+setInterval(rafraichir, 15000);
+</script>
+</body>
+</html>

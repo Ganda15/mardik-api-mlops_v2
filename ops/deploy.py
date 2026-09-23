@@ -77,7 +77,7 @@ def publier(
     bundle: str = "v2",
     commit: str | None = None,
     registry: Registry | None = None,
-    seuil: float = 0.75,
+    seuil: float | None = None,   # None → eval/thresholds.yml (brique 13)
     rapport: Any | None = None,
 ) -> dict[str, Any]:
     reg = registry or Registry()
@@ -116,12 +116,23 @@ def promouvoir(version: str, registry: Registry | None = None) -> dict[str, Any]
     return reg.index()
 
 
-def rollback(registry: Registry | None = None, motif: str = "manuel") -> dict[str, Any]:
+def rollback(
+    registry: Registry | None = None,
+    motif: str = "manuel",
+    *,
+    acteur: str | None = None,
+    commentaire: str | None = None,
+    alerte: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Retour arrière — toujours une décision humaine (CTO). Brique 16 (Ch2) : la ligne de journal
+    porte aussi qui a décidé (``acteur``), pourquoi (``commentaire``), l'alerte qui l'a motivé, et la
+    version quittée (``version``) — le lien signal → décision que demande le test 10 du brief."""
     reg = registry or Registry()
     idx = reg.index()
     avant = dict(idx)
 
     canary, _pct = reg.canary()
+    quittee = canary or idx.get("active")
     if canary:
         nouvel_index = {**idx, "canary": None, "canary_percent": 0}
     else:
@@ -132,7 +143,14 @@ def rollback(registry: Registry | None = None, motif: str = "manuel") -> dict[st
 
     reg.ecrire_index(nouvel_index)
     apres = reg.index()
-    reg.journaliser("rollback", motif=motif, avant=avant, apres=apres)
+    details: dict[str, Any] = {"version": quittee, "motif": motif, "avant": avant, "apres": apres}
+    if acteur:
+        details["acteur"] = acteur
+    if commentaire:
+        details["commentaire"] = commentaire
+    if alerte:
+        details["alerte"] = alerte
+    reg.journaliser("rollback", **details)
     return apres
 
 
@@ -196,7 +214,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("publier")
     p.add_argument("version")
     p.add_argument("--bundle", default="v2")
-    p.add_argument("--seuil", type=float, default=0.75)
+    p.add_argument("--seuil", type=float, default=None)
     c = sub.add_parser("canary")
     c.add_argument("version")
     c.add_argument("--pourcentage", type=int, default=None)
@@ -204,6 +222,7 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("version")
     r = sub.add_parser("rollback")
     r.add_argument("--motif", default="manuel")
+    r.add_argument("--acteur", default=None, help="qui décide (brique 16) — obligatoire depuis la chaîne")
     s = sub.add_parser("surveiller")
     s.add_argument("--boucle", action="store_true")
     s.add_argument("--intervalle", type=float, default=5.0)
@@ -218,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.commande == "promouvoir":
             print(promouvoir(args.version))
         elif args.commande == "rollback":
-            print(rollback(motif=args.motif))
+            print(rollback(motif=args.motif, acteur=args.acteur))
         elif args.commande == "surveiller":
             while True:
                 res = surveiller(fenetre_s=args.fenetre)
