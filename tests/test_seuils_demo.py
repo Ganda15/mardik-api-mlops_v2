@@ -29,5 +29,5 @@ def test_la_demo_ne_touche_que_les_temps_d_attente_et_la_capture():
 
 def test_l_overlay_docker_de_demo_pointe_vers_ce_fichier_pour_l_app_et_le_watcher():
     overlay = yaml.safe_load((RACINE / "docker-compose.demo.yml").read_text(encoding="utf-8"))
-    for service in ("app", "watcher"):
+    for service in ("app", "watcher", "public"):   # public aussi : capture et seuils cohérents sur le lien de démo
         assert overlay["services"][service]["environment"]["MARDIK_SEUILS"] == "/app/eval/thresholds.demo.yml"

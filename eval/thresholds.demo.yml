@@ -36,7 +36,7 @@ promotion:
   refus_consecutifs_alerte: 2
 
 capture:
-  score_global_max: 0.5
+  score_global_max: 0.6   # demo only: raised to reliably trigger capture on drift scores measured at 0.51-0.58
 
 signature:
   score_median: 0.993

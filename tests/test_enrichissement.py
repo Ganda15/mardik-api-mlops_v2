@@ -6,8 +6,11 @@ et la chaîne le rejoue à la fusion suivante. Conception Ch2 §4.3 :
    dans ``ops/candidats.jsonl`` ;
 2. masquage AVANT stockage — parties, montants, courriels remplacés ; partiel par construction, dit tel quel ;
 3. étiquetage — un juriste dit quelles clauses étaient attendues ;
-4. ajout — le cas entre dans ``eval/attendus.jsonl`` (+ son texte dans ``eval/contrats/``) : un commit ;
-5. rejeu — la PR touche ``eval/attendus.jsonl`` : le filtre de chemin de llmops.yml relance le gate.
+4. ajout — le cas entre dans ``eval/attendus_production.jsonl`` (+ son texte dans ``eval/contrats/``) : un commit.
+   Jamais dans ``eval/attendus.jsonl`` : le test fourni ``test_gate_evaluation_note_par_version`` fige les 12
+   contrats de référence (constaté le 23/09 sur le premier cas réel) ;
+5. rejeu — la PR touche ``eval/attendus_production.jsonl`` : le filtre de chemin relance le gate, et
+   ``eval.rejouer_production`` rejoue ces cas seuls (tests/test_rejouer_production.py).
 La capture est tracée dans ``candidats.jsonl`` ; le journal de pilotage trace l'``enrichissement`` (une décision),
 sans jamais un texte de contrat.
 """
@@ -117,3 +120,25 @@ def test_une_requete_v2_peu_sure_est_capturee_par_l_api(client, tmp_path, monkey
     corps = client.post("/v2/analyse", json={"texte": TEXTE}).json()
     cas = [json.loads(x) for x in (tmp_path / "candidats-api.jsonl").read_text(encoding="utf-8").splitlines()]
     assert cas[-1]["request_id"] == corps["request_id"]
+
+
+def test_par_defaut_un_cas_va_dans_le_fichier_de_production_jamais_dans_les_12(tmp_path, registry, monkeypatch, capsys):
+    """Le premier cas réel (23/09) avait été versé dans eval/attendus.jsonl : le test fourni sur les 12 contrats
+    est passé au rouge. Par défaut, ajouter_cas écrit dans eval/attendus_production.jsonl, et lister l'y lit."""
+    from pathlib import Path
+
+    from ops.enrichissement import main
+
+    candidats = tmp_path / "candidats.jsonl"
+    capturer(TEXTE, request_id="req_9", version="v2.0.0", score=0.2, clauses=[], chemin=candidats)
+    monkeypatch.setenv("CANDIDATS_PATH", str(candidats))
+    production = tmp_path / "attendus_production.jsonl"
+    monkeypatch.setenv("ATTENDUS_PRODUCTION_PATH", str(production))
+
+    cid = ajouter_cas("req_9", ["durée"], contrats=tmp_path / "contrats", registry=registry)
+
+    assert [json.loads(x)["contrat_id"] for x in production.read_text(encoding="utf-8").splitlines()] == [cid]
+    reference = (Path(__file__).resolve().parent.parent / "eval" / "attendus.jsonl").read_text(encoding="utf-8")
+    assert cid not in reference and sum(1 for x in reference.splitlines() if x.strip()) == 12
+    assert main(["lister"]) == 0
+    assert "Aucun candidat" in capsys.readouterr().out                    # déjà ajouté : lister le sait

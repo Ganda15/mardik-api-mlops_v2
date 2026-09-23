@@ -12,9 +12,12 @@ Conception Ch2 §4.3 :
    construction** : une regex ne voit pas un nom sans forme juridique, une adresse, un numéro de SIREN.
    L'anonymisation reste une question ouverte avec le client ; le dossier le dit au lieu de la supposer réglée.
 3. **Étiquetage** — un juriste dit quelles clauses étaient attendues (``lister`` puis ``ajouter``).
-4. **Ajout** — texte masqué dans ``eval/contrats/prod-<request_id>.txt``, ligne dans ``eval/attendus.jsonl``
-   avec son origine ; c'est un commit, porté par une pull request.
-5. **Rejeu** — la PR modifie ``eval/attendus.jsonl`` : le filtre de chemin de llmops.yml relance le gate.
+4. **Ajout** — texte masqué dans ``eval/contrats/prod-<request_id>.txt``, ligne dans
+   ``eval/attendus_production.jsonl`` avec son origine ; c'est un commit, porté par une pull request.
+   **Jamais dans ``eval/attendus.jsonl``** : le test fourni ``test_gate_evaluation_note_par_version`` fige les 12
+   contrats de référence — un 13ᵉ le casse pour toujours (constaté le 23/09 sur le premier cas réel).
+5. **Rejeu** — la PR modifie ``eval/attendus_production.jsonl`` : le filtre de chemin de llmops.yml relance le
+   gate, et ``python -m eval.rejouer_production`` rejoue ces cas seuls, bloquant si l'un échoue.
 La capture est tracée dans ``candidats.jsonl`` (heure, requête, score, seuil) ; le journal de pilotage trace
 l'``enrichissement``, qui est une décision — jamais un texte de contrat.
 """
@@ -36,7 +39,7 @@ from ops.seuils import charger_seuils
 
 RACINE = Path(__file__).resolve().parent.parent
 CHEMIN_CANDIDATS_DEFAUT = RACINE / "ops" / "candidats.jsonl"
-CHEMIN_ATTENDUS = RACINE / "eval" / "attendus.jsonl"
+CHEMIN_ATTENDUS_PRODUCTION = RACINE / "eval" / "attendus_production.jsonl"   # jamais eval/attendus.jsonl (les 12)
 DOSSIER_CONTRATS = RACINE / "eval" / "contrats"
 
 _COURRIEL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
@@ -50,6 +53,10 @@ class ErreurEnrichissement(ValueError):
 
 def chemin_candidats() -> Path:
     return Path(os.environ.get("CANDIDATS_PATH") or CHEMIN_CANDIDATS_DEFAUT)
+
+
+def chemin_attendus_production() -> Path:
+    return Path(os.environ.get("ATTENDUS_PRODUCTION_PATH") or CHEMIN_ATTENDUS_PRODUCTION)
 
 
 def masquer(texte: str) -> str:
@@ -113,7 +120,7 @@ def ajouter_cas(
     clauses: list[str],
     *,
     candidats: Path | None = None,
-    attendus: Path = CHEMIN_ATTENDUS,
+    attendus: Path | None = None,
     contrats: Path = DOSSIER_CONTRATS,
     registry: Registry | None = None,
     seuil_note: float = 0.75,
@@ -125,6 +132,7 @@ def ajouter_cas(
     if cas is None:
         raise ErreurEnrichissement(f"candidat introuvable : {request_id}")
     contrat_id = f"prod-{request_id}"
+    attendus = attendus or chemin_attendus_production()
     existants = _lire_jsonl(attendus)
     if any(e["contrat_id"] == contrat_id for e in existants):
         raise ErreurEnrichissement(f"{contrat_id} est déjà dans le jeu d'évaluation")
@@ -142,7 +150,7 @@ def ajouter_cas(
     (registry or Registry()).journaliser(
         "enrichissement", version=cas["version"], request_id=request_id, contrat_id=contrat_id,
         clauses_attendues=clauses, nb_cas=len(existants) + 1,
-        action="ajouté à eval/attendus.jsonl — à committer par une pull request (le gate le rejoue)")
+        action="ajouté à eval/attendus_production.jsonl — à committer par une pull request (eval.rejouer_production le rejoue)")
     return contrat_id
 
 
@@ -156,7 +164,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.commande == "lister":
-        deja = {e["contrat_id"] for e in _lire_jsonl(CHEMIN_ATTENDUS)}
+        deja = {e["contrat_id"] for e in _lire_jsonl(chemin_attendus_production())}
         restants = [c for c in _lire_jsonl(chemin_candidats()) if f"prod-{c['request_id']}" not in deja]
         if not restants:
             print("Aucun candidat en attente d'étiquetage.")
@@ -169,7 +177,7 @@ def main(argv: list[str] | None = None) -> int:
     except ErreurEnrichissement as exc:
         print(f"REFUSÉ : {exc}", file=sys.stderr)
         return 1
-    print(f"Ajouté : {cid}. À committer (eval/attendus.jsonl + eval/contrats/{cid}.txt) par une pull request.")
+    print(f"Ajouté : {cid}. À committer (eval/attendus_production.jsonl + eval/contrats/{cid}.txt) par une pull request.")
     return 0
 
 
