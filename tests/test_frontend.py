@@ -48,3 +48,10 @@ def test_la_page_ne_construit_jamais_de_html_depuis_les_donnees(page):
 
 def test_la_page_ne_charge_rien_depuis_internet(page):
     assert re.search(r'(src|href)\s*=\s*"https?://', page) is None
+
+
+def test_la_page_envoie_la_cle_et_explique_les_refus(page):
+    """F3 : sur le lien public, la page porte la clé et traduit 401 / 429 pour le juriste."""
+    assert 'id="cle"' in page and 'type="password"' in page
+    assert "X-API-Key" in page
+    assert "r.status === 401" in page and "r.status === 429" in page

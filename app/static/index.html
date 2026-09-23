@@ -94,6 +94,13 @@
   .choix label { display: flex; gap: .5rem; align-items: baseline; }
   .choix small { color: var(--encre-pale); }
 
+  .acces { margin-top: 1.25rem; }
+  input[type=password] {
+    width: 100%; max-width: 22rem; padding: .5rem .75rem;
+    border: 1px solid var(--filet); border-radius: 4px;
+    background: var(--feuille); color: var(--encre); font: inherit;
+  }
+
   button[type=submit] {
     margin-top: 1.25rem; padding: .625rem 1.25rem; border: 0;
     background: var(--action); color: var(--action-texte); font-weight: 600;
@@ -184,6 +191,12 @@
       </div>
     </fieldset>
 
+    <div class="acces">
+      <label class="titre" for="cle">Code d'accès</label>
+      <p class="aide" id="aide-cle">Demandé seulement sur le lien public. Il reste dans cet onglet et disparaît à sa fermeture.</p>
+      <input type="password" id="cle" autocomplete="off" aria-describedby="aide-cle">
+    </div>
+
     <button type="submit" id="bouton">Analyser le contrat</button>
     <p id="etat" role="status" aria-live="polite"></p>
   </form>
@@ -227,6 +240,12 @@ function majCompteur() {
   $("compteur").textContent = n.toLocaleString("fr-FR") + (n > 1 ? " caractères" : " caractère");
 }
 $("texte").addEventListener("input", majCompteur);
+
+// Le code d'accès reste dans l'onglet (sessionStorage), jamais dans une URL ni sur le disque.
+try { $("cle").value = sessionStorage.getItem("mardik-cle") || ""; } catch (_) { /* stockage indisponible : on redemandera */ }
+$("cle").addEventListener("input", () => {
+  try { sessionStorage.setItem("mardik-cle", $("cle").value); } catch (_) { /* sans effet */ }
+});
 
 $("fichier").addEventListener("change", () => {
   const f = $("fichier").files[0];
@@ -331,7 +350,8 @@ $("formulaire").addEventListener("submit", async (evt) => {
   try {
     const r = await fetch(route, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: Object.assign({ "Content-Type": "application/json" },
+                             $("cle").value.trim() ? { "X-API-Key": $("cle").value.trim() } : {}),
       body: JSON.stringify({ texte }),
       signal: arret.signal,
     });
@@ -344,6 +364,15 @@ $("formulaire").addEventListener("submit", async (evt) => {
       else if (!corps.clauses.length && corps.libelle === undefined) afficherV1(corps, version);
       else afficherV2(corps, version);
       $("etat").textContent = "Analyse terminée en " + nombre((Date.now() - debut) / 1000, 1) + " s.";
+    } else if (r.status === 401) {
+      afficherErreur("Code d'accès refusé.",
+        ["Saisissez le code d'accès communiqué avec le lien, puis relancez l'analyse."]);
+      $("etat").textContent = "";
+      $("cle").focus();
+    } else if (r.status === 429) {
+      afficherErreur("Le budget de la démonstration est atteint.",
+        [(corps && corps.detail ? corps.detail + ". " : "") + "Réessayez demain, ou prévenez l'équipe technique."]);
+      $("etat").textContent = "";
     } else if (r.status === 422) {
       afficherErreur("Le texte envoyé n'est pas analysable.", lignes422(corps && corps.detail));
       $("etat").textContent = "";

@@ -137,7 +137,16 @@ du Chantier 2) :
   (fichier chargé, réponse v2, réponse v1, 422, largeur mobile, mode sombre, console sans erreur) — un défaut trouvé ainsi
   (le mot « null » affiché sous une réponse v1) et corrigé. **Limite** : le JavaScript de la page n'a pas de test automatisé,
   seulement cette vérification manuelle outillée.
-- **Reste pour N12** : l'**hébergement** (un lien public) — décision séparée, voir `ETAT.md` du dossier du brief.
+- **F3.** `app/securite.py`, branché dans `app/main.py` — **décision d'Era du 23/09 : le lien public passe par un tunnel depuis
+  son PC (option C)**. Une page publique qui appelle Azure = un budget que n'importe qui peut dépenser, donc deux gardes, actives
+  seulement sur l'instance lancée avec leur variable (jamais dans `.env`) : `MARDIK_API_KEY` → chaque POST exige `X-API-Key`
+  (conception Ch1 §2.3), `401` sinon ; `MARDIK_BUDGET_JOUR_EUR` → `429` au-delà du coût des 24 dernières heures (lu dans les
+  `Mesure`). Les GET restent ouverts (la page doit se charger). Refus décidés avant tout appel au modèle : ils ne coûtent rien.
+  La page porte un champ « Code d'accès » (gardé dans l'onglet, `sessionStorage`) et traduit `401` / `429`. ✅ 13 tests
+  (`tests/test_securite_instance_publique.py`, +1 dans `tests/test_frontend.py`) ; `conftest.py` retire les deux variables
+  (l'app charge `.env`) ; vérifié dans un navigateur, un défaut trouvé ainsi et corrigé (montants arrondis à 2 décimales :
+  0,006 € et 0,005 € s'affichaient tous deux « 0.01 »). **Limite** : un tunnel n'est pas un hébergement — le lien meurt quand
+  le PC s'éteint, et son adresse change à chaque lancement.
 
 **La question de §3 (« taille de section »), mesurée deux fois le 21/09 — sur deux fournisseurs différents :**
 

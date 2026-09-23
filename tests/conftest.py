@@ -29,6 +29,9 @@ def environnement(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setenv("LLM_PROVIDER", "ollama")
     monkeypatch.setenv("LLM_MODEL", "modele-de-test")
     monkeypatch.delenv("CANARY_PERCENT", raising=False)
+    # Brique F3 : l'app charge .env ; une clé ou un plafond posés là ne doivent pas fuir dans les tests.
+    monkeypatch.delenv("MARDIK_API_KEY", raising=False)
+    monkeypatch.delenv("MARDIK_BUDGET_JOUR_EUR", raising=False)
     monkeypatch.setenv("METRICS_PATH", str(tmp_path / "metrics.jsonl"))
     monkeypatch.setenv("REGISTRY_PATH", str(tmp_path / "registry"))
     monkeypatch.setenv("OTEL_TRACES", "off")

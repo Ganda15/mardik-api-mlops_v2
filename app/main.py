@@ -14,6 +14,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from app import api_v1, api_v2, gateway
+from app.securite import garde_instance_publique
 from app.telemetry import build_default_telemetry
 
 # Brique F2 : la page unique du juriste (conception Ch1, H15), servie par l'API elle-même.
@@ -23,6 +24,8 @@ PAGE_ACCUEIL = Path(__file__).resolve().parent / "static" / "index.html"
 def create_app() -> FastAPI:
     app = FastAPI(title="Mardik — analyse de contrats", version="2.0.0")
     build_default_telemetry()
+    # Brique F3 : sans effet tant que MARDIK_API_KEY / MARDIK_BUDGET_JOUR_EUR ne sont pas posées.
+    app.middleware("http")(garde_instance_publique)
 
     app.include_router(api_v1.router)
     app.include_router(api_v2.router)
