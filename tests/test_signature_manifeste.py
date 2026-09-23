@@ -37,9 +37,25 @@ def test_avec_le_vrai_modele_le_gate_calcule_mediane_et_part_basse(monkeypatch, 
     assert ligne["signature"]["analyses"] == 4           # l'historique la garde
 
 
-def _rapport(signature):
+def _rapport(signature, modele=None):
     return Rapport(version="v2.0.0", date="2026-09-23T00:00:00+00:00", essais=1, note=1.0, par_contrat={},
-                   latence_p95_ms=1000.0, cout_moyen_eur=0.01, passe=True, signature=signature)
+                   latence_p95_ms=1000.0, cout_moyen_eur=0.01, passe=True, signature=signature, modele=modele)
+
+
+def test_le_manifeste_porte_le_modele_du_rapport_pas_celui_du_runner(registry, monkeypatch):
+    """Constaté le 23/09 sur main : v2.3.1 publiée depuis le vrai rapport portait la vraie signature mais
+    modele-ci — le nom du modèle venait du bundle chargé sur le runner (LLM_MODEL=modele-ci)."""
+    monkeypatch.setenv("LLM_MODEL", "modele-ci")
+    publier("v2.0.0", rapport=_rapport({"score_median": 0.99, "part_score_bas": 0.0, "analyses": 12}, modele="gpt-5.4"),
+            registry=registry)
+    assert registry.manifest("v2.0.0")["modele"] == "gpt-5.4"
+    publier("v2.0.1", rapport=_rapport(None), registry=registry)          # sans modele : celui du bundle
+    assert registry.manifest("v2.0.1")["modele"] == "modele-ci"
+
+
+def test_le_gate_note_le_modele_qu_il_a_mesure(historique):
+    rapport = evaluer("v2", sous_ensemble=["c01"], historique=historique)
+    assert rapport.modele == "modele-de-test"                              # conftest : LLM_MODEL=modele-de-test
 
 
 def test_publier_porte_la_signature_dans_le_manifeste(registry):

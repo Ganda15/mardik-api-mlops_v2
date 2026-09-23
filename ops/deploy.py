@@ -94,8 +94,11 @@ def publier(
 
     bundle_charge = Bundle.charger(bundle)
     commit_final = commit or _commit_courant()
+    # Le manifeste dit le modèle que le GATE a mesuré (rapport.modele) : publié depuis un rapport réel sur un
+    # runner en MOCK, il dirait sinon modele-ci (constaté sur v2.3.1, 23/09).
+    details = {"modele": rapport.modele} if getattr(rapport, "modele", None) else None
     manifest = reg.etiqueter(version, bundle_charge, commit=commit_final, note_eval=rapport.note,
-                             signature=getattr(rapport, "signature", None))
+                             signature=getattr(rapport, "signature", None), details=details)
     reg.journaliser("publication", version=version, commit=commit_final, note_eval=rapport.note)
     return manifest
 
