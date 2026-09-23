@@ -38,6 +38,7 @@ def test_la_publication_exige_le_tag_seulement_si_la_variable_est_posee():
     etapes = wf["jobs"]["publication"]["steps"]
     garde = next(s for s in etapes if s.get("id") == "eval-ok")
     assert "MARDIK_EXIGER_EVAL_OK" in garde["if"]              # absente : rien ne change, main ne se bloque pas
-    assert "eval-ok/$GITHUB_SHA" in garde["run"] and "exit 1" in garde["run"]
+    assert "eval-ok/$SHA" in garde["run"] and "exit 1" in garde["run"]
+    assert "HEAD^2" in garde["run"]                            # la tête de la PR compte aussi (fusion = autre sha)
     etiqueter = next(s for s in etapes if "ops.deploy publier" in s.get("run", ""))
     assert "steps.eval-ok.outputs.rapport" in etiqueter["run"]  # le manifeste vient du vrai rapport

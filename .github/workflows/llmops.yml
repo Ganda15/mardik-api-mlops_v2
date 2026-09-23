@@ -209,13 +209,20 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -z "$(git tag -l "eval-ok/$GITHUB_SHA")" ]; then
-            echo "::error::aucun tag eval-ok/$GITHUB_SHA — le gate réel (gate-reel.yml) n a pas validé ce commit : publication refusée"
+          # Le tag est posé par gate-reel sur un commit précis : la tête de la PR (gate joué AVANT la fusion) ou
+          # le commit de fusion lui-même (gate joué APRÈS, puis re-run des jobs échoués). HEAD^2 = la tête fusionnée.
+          VALIDE=""
+          for SHA in "$GITHUB_SHA" "$(git rev-parse HEAD^2 2>/dev/null || true)"; do
+            if [ -n "$SHA" ] && [ -n "$(git tag -l "eval-ok/$SHA")" ]; then VALIDE="$SHA"; break; fi
+          done
+          if [ -z "$VALIDE" ]; then
+            echo "::error::aucun tag eval-ok/<sha> ni sur $GITHUB_SHA ni sur la tête fusionnée — le gate réel (gate-reel.yml) n a pas validé ce code : publication refusée"
             exit 1
           fi
+          echo "gate réel validé sur $VALIDE"
           RUN=$(gh run list --workflow gate-reel.yml --json databaseId,headSha,conclusion \
-                --jq ".[] | select(.headSha == \"$GITHUB_SHA\" and .conclusion == \"success\") | .databaseId" | head -n 1)
-          gh run download "$RUN" -n "gate-reel-$GITHUB_SHA" -D gate-reel
+                --jq ".[] | select(.headSha == \"$VALIDE\" and .conclusion == \"success\") | .databaseId" | head -n 1)
+          gh run download "$RUN" -n "gate-reel-$VALIDE" -D gate-reel
           echo "rapport=--rapport gate-reel/rapport.json" >> "$GITHUB_OUTPUT"
       - name: Étiqueter la version dans le registre — REFUSE si le gate a échoué
         run: uv run python -m ops.deploy publier "$VERSION" --bundle v2 ${{ steps.eval-ok.outputs.rapport }}
