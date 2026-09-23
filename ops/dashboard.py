@@ -33,6 +33,8 @@ from typing import Any
 
 from app.telemetry import Mesure, MetricsStore
 from ops.registry import Registry
+from ops.seuils import charger_seuils
+from ops.signaux import calculer_signaux
 
 
 def _percentile(valeurs: list[float], p: float) -> float:
@@ -57,6 +59,7 @@ def resume(
     for m in mesures:
         par_version_brut.setdefault(m.version, []).append(m)
 
+    requetes_min = int(charger_seuils()["fenetre"]["requetes_min"])  # brique 14 : « données insuffisantes »
     par_version: dict[str, dict[str, Any]] = {}
     for version, ms in par_version_brut.items():
         requetes = len(ms)
@@ -78,6 +81,10 @@ def resume(
             "score_moyen": round(sum(scores) / len(scores), 3) if scores else None,
             "cout_total_eur": round(sum(m.cout_eur for m in ms), 6),
         }
+        # Brique 14 (Ch2) : la distribution du score, pas seulement sa moyenne (gardée pour le test fourni).
+        sig = calculer_signaux(ms, requetes_min)
+        for cle in ("etat", "cout_moyen_eur", "part_score_bas", "score_median", "score_deciles"):
+            par_version[version][cle] = sig[cle]
 
     reg = registry or Registry()
     journal = reg.journal()[-5:]
@@ -90,11 +97,15 @@ def rendre_texte(r: dict[str, Any]) -> str:
     if not r["par_version"]:
         lignes.append("  (aucun trafic dans la fenêtre)")
     for version, v in r["par_version"].items():
-        score = "—" if v["score_moyen"] is None else f"{v['score_moyen']:.2f}"
+        if v.get("part_score_bas") is None:
+            score = "score —"
+        else:
+            score = f"score < 0,5 : {v['part_score_bas']:.0%}  médiane {v['score_median']:.2f}"
+        etat = "  [données insuffisantes]" if v.get("etat") == "donnees_insuffisantes" else ""
         lignes.append(
             f"  {version:10} {v['requetes']:4} req  ({v['trafic_pct']:5.1f} %)  "
             f"p50={v['latence_p50_ms']:.0f} ms  p95={v['latence_p95_ms']:.0f} ms  "
-            f"erreurs={v['taux_erreur']:.1%}  score={score}"
+            f"erreurs={v['taux_erreur']:.1%}  coût moyen={v.get('cout_moyen_eur', 0):.3f} €  {score}{etat}"
         )
     if r["journal"]:
         lignes.append("Derniers événements :")
@@ -110,12 +121,15 @@ def rendre_html(r: dict[str, Any]) -> str:
     # journal sont des chaînes d'origine externe au calcul (config du bundle, événements) :
     # échappées explicitement, même si rien d'injectable n'y transite aujourd'hui.
     def _ligne(version: str, v: dict[str, Any]) -> str:
-        score = "—" if v["score_moyen"] is None else f"{v['score_moyen']:.2f}"
+        bas = "—" if v.get("part_score_bas") is None else f"{v['part_score_bas']:.0%}"
+        med = "—" if v.get("score_median") is None else f"{v['score_median']:.2f}"
+        etat = "données insuffisantes" if v.get("etat") == "donnees_insuffisantes" else "ok"
         return (
             f"<tr><td>{html.escape(version)}</td><td>{v['requetes']}</td>"
             f"<td>{v['trafic_pct']:.1f}&nbsp;%</td>"
             f"<td>{v['latence_p50_ms']:.0f}&nbsp;ms</td><td>{v['latence_p95_ms']:.0f}&nbsp;ms</td>"
-            f"<td>{v['taux_erreur']:.1%}</td><td>{score}</td></tr>"
+            f"<td>{v['taux_erreur']:.1%}</td><td>{v.get('cout_moyen_eur', 0):.3f}&nbsp;€</td>"
+            f"<td>{bas}</td><td>{med}</td><td>{etat}</td></tr>"
         )
 
     lignes_versions = "".join(_ligne(version, v) for version, v in r["par_version"].items())
@@ -140,7 +154,7 @@ def rendre_html(r: dict[str, Any]) -> str:
   <h1>Mardik — tableau de bord</h1>
   <p>Fenêtre : {r['fenetre_s']:.0f} s — {r['total']} requêtes</p>
   <table>
-    <tr><th>Version</th><th>Requêtes</th><th>Trafic</th><th>P50</th><th>P95</th><th>Erreurs</th><th>Score moyen</th></tr>
+    <tr><th>Version</th><th>Requêtes</th><th>Trafic</th><th>P50</th><th>P95</th><th>Erreurs</th><th>Coût moyen</th><th>Scores &lt; 0,5</th><th>Médiane du score</th><th>État</th></tr>
     {lignes_versions}
   </table>
   <h2>Derniers événements</h2>

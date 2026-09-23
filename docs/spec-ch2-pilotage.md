@@ -87,7 +87,7 @@ Les cinq tests fournis de `tests/acceptance/test_observabilite.py` sont **verts 
 | Brique | Quoi | Ferme |
 |---|---|---|
 | **13** ✅ | `eval/thresholds.yml` + `ops/seuils.py` (échec fermé, `MARDIK_SEUILS` pour la démo) ; le gate, la publication et la chaîne lisent le fichier, valeurs inchangées. `surveiller()` est remplacé par le watcher en brique 15 | contrainte « un seul fichier » ; manque du 22/09 |
-| **14** | les cinq signaux par version sur une fenêtre, « données insuffisantes » ; le tableau de bord montre part < 0,5, médiane, déciles | E6, test 9, A4 |
+| **14** ✅ | les cinq signaux par version sur une fenêtre, « données insuffisantes » ; le tableau de bord montre part < 0,5, médiane, déciles | E6, test 9, A4 |
 | **15** | le watcher, un tour : alerte tracée (signal, valeur, seuil, fenêtre) ; promotion automatique 10 → 50 → 100 si **tous** les critères tiennent, sinon `refus_promotion` ; **jamais** de rollback | E7 (détection), E8, test 7 |
 | **16** | l'API de pilotage (§2) + la page `/pilotage` : bannière d'alerte, signaux, journal, bouton de rollback avec nom obligatoire ; **et** `.github/workflows/rollback.yml` (`workflow_dispatch`) sur le registre publié | E7 (décision), test 6, test 10 |
 | **17** | capture des cas < 0,5 avec masquage ; script d'ajout étiqueté au jeu d'évaluation (version N+1) | E9, test 8 |
