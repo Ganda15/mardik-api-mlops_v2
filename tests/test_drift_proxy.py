@@ -29,3 +29,34 @@ def test_amont_azure_omet_api_version_si_vide(monkeypatch: pytest.MonkeyPatch) -
     url, _ = _amont("azure", "chat/completions")
 
     assert url == "https://exemple.services.ai.azure.com/openai/v1/chat/completions"
+
+
+# --- 23/09 (c12 > 8 s) : le relais ouvrait un AsyncClient NEUF par requête relayée -----------------------
+# Mesuré : 23 appels de section en parallèle (c12) → via le proxy max 6,66 s / médiane 4,44 s ; direct Azure
+# max 3,19 s / médiane 1,71 s. Une poignée de main TLS et une résolution DNS par appel, depuis le conteneur.
+
+
+def test_le_relais_reutilise_un_seul_client_amont(monkeypatch: pytest.MonkeyPatch) -> None:
+    import httpx
+    from fastapi.testclient import TestClient
+
+    from ops import drift_proxy
+
+    monkeypatch.setenv("AZURE_AI_ENDPOINT", "http://amont.test/openai/v1")
+    monkeypatch.setenv("AZURE_AI_API_VERSION", "")
+    drift_proxy._http = None                                   # état propre pour ce test
+    fabriques: list[int] = []
+    transport = httpx.MockTransport(lambda req: httpx.Response(200, json={"choices": [{"message": {"content": "{}"}}]}))
+    ClientOriginal = httpx.AsyncClient
+
+    def _fabrique(*a, **k):
+        fabriques.append(1)
+        return ClientOriginal(transport=transport, timeout=k.get("timeout"))
+
+    monkeypatch.setattr(httpx, "AsyncClient", _fabrique)
+    client = TestClient(drift_proxy.app)
+    for _ in range(3):
+        r = client.post("/chat/completions", json={"x": 1}, headers={"x-mardik-provider": "azure"})
+        assert r.status_code == 200
+    assert len(fabriques) == 1                                 # un client, trois requêtes
+    drift_proxy._http = None
