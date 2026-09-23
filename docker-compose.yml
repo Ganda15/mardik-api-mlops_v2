@@ -67,7 +67,7 @@ services:
     depends_on:
       - app
 
-  # --- Le lien public (profil « public », décision d'Era du 23/09, option C) ----------------
+  # --- Le lien public (profil « public », décision du 23/09, option C) ----------------
   # Démarre seulement avec : docker compose --profile public up -d
   # Code d'accès et plafond : public.env, créé par  uv run python -m scripts.nouveau_code_public
   # Procédure complète : docs/exploitation.md §8.

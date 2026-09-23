@@ -1,6 +1,6 @@
 """F3 — le fichier de code du lien public est créé par un script, jamais tapé à la main.
 
-Le 23/09, trois codes ont fui dans un chat et un quatrième a été lancé avec le texte
+Le 23/09, trois codes ont fui dans un message et un quatrième a été lancé avec le texte
 littéral « LE_CODE » : remplacer un gabarit à la main ne marche pas. Le script écrit
 ``public.env`` (ignoré par git) et affiche le code une seule fois.
 """
@@ -51,7 +51,7 @@ def test_admin_env_est_ignore_par_git():
 
 
 def test_le_script_n_affiche_jamais_le_secret_en_entier(tmp_path, monkeypatch, capsys):
-    """23/09 : trois secrets affichés par ce script ont fini collés dans un chat — copier la sortie du
+    """23/09 : trois secrets affichés par ce script ont fini collés dans un message — copier la sortie du
     terminal est le geste normal. Le script n'affiche donc que les 4 premiers caractères."""
     import scripts.nouveau_code_public as s
 

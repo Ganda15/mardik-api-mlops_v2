@@ -1,4 +1,4 @@
-"""La démo Chantier 2 en une commande, sans make (absent sur le poste d'Era : PowerShell 5.1, Git Bash).
+"""La démo Chantier 2 en une commande, sans make (absent sur un poste Windows : PowerShell 5.1, Git Bash).
 
 Trouvé le 23/09 : relancer le profil « public » avec `docker compose` seul recrée app/watcher/public SANS
 l'overlay de démo (seuils réels, watcher 60 s). Le lanceur passe TOUJOURS les deux fichiers.
