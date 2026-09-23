@@ -46,6 +46,18 @@ def scorer(clauses: list[Clause], texte: str) -> tuple[list[Clause], float]:
     return clauses, score_global
 
 
+def clauses_prouvees(clauses: list[Clause], texte: str) -> list[Clause]:
+    """Clauses dont l'extrait figure mot pour mot dans le texte — les seules renvoyées.
+
+    Décision du 23/09 (red-team Era, run e04cea659151) : sur un texte qui n'est pas un
+    contrat, le modèle peut annoncer les quatorze types avec des extraits vides ou
+    inventés ; le score les ramenait à 0 mais la réponse les listait quand même — et le
+    gate comptait chaque type renvoyé comme détecté. Une clause sans extrait vérifié
+    n'est pas une détection, c'est du bruit : elle n'a pas sa place dans la réponse.
+    """
+    return [c for c in clauses if _extrait_verifie(c.extrait, texte)]
+
+
 def _extrait_verifie(extrait: str, texte: str) -> bool:
     """Vrai seulement si ``extrait``, non vide, figure mot pour mot dans ``texte``.
 

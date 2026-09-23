@@ -42,7 +42,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.llm_client import Bundle, ErreurLLM, LLMClient
-from app.pipeline.confiance import Clause, libeller, scorer
+from app.pipeline.confiance import Clause, clauses_prouvees, libeller, scorer
 from app.pipeline.consolidation import consolider
 from app.pipeline.decoupage import Section, decouper, regrouper
 from app.pipeline.extraction import extraire
@@ -51,6 +51,8 @@ from app.telemetry import Mesure, Telemetry, build_default_telemetry
 router = APIRouter(prefix="/v2", tags=["v2"])
 VERSION_V2 = "v2"
 
+
+TAILLE_MAX_TEXTE = 200_000  # ~65 pages : le plus gros contrat de référence (c12) est à ~31 sections
 
 class RequeteAnalyseV2(BaseModel):
     texte: str = Field(..., min_length=20, description="Texte intégral du contrat")
@@ -152,7 +154,13 @@ def analyser_v2(
         tokens_sortie = sum(r[3] for r in resultats)
 
         clauses_consolidees = consolider(par_section)
-        clauses_notees, confiance_globale = scorer(clauses_consolidees, texte)
+        clauses_notees, _ = scorer(clauses_consolidees, texte)
+        # Une clause sans extrait vérifié n'est pas une détection (voir clauses_prouvees) :
+        # le score global est recalculé sur les seules clauses prouvées.
+        clauses_notees = clauses_prouvees(clauses_notees, texte)
+        confiance_globale = (
+            sum(c.confiance for c in clauses_notees) / len(clauses_notees) if clauses_notees else 0.0
+        )
 
         latence = (time.perf_counter() - debut) * 1000
         telemetry.metriques.enregistrer(
@@ -218,6 +226,13 @@ def analyse(
     telemetry: Telemetry = Depends(get_telemetry),
 ) -> ReponseAnalyseV2 | JSONResponse:
     rid = nouveau_request_id()
+    if len(requete.texte) > TAILLE_MAX_TEXTE:
+        # Refus AVANT tout appel au modèle : un document surdimensionné ne doit pouvoir
+        # ni vider le budget ni allonger la file (red-team Era, 23/09 — drain du budget).
+        return JSONResponse(
+            status_code=413,
+            content={"detail": f"document trop volumineux ({len(requete.texte)} caractères ; max {TAILLE_MAX_TEXTE})", "request_id": rid},
+        )
     try:
         reponse = analyser_v2(requete.texte, client, telemetry, request_id=rid)
     except ErreurLLM as exc:
