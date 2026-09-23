@@ -16,7 +16,7 @@ déployée en canary, observée, promue ou retirée sur signal.
 
 | Exigence (note « Plus jamais ça ») | Ce qui la prouve |
 |---|---|
-| **La v2 répond au besoin** — contrats longs, score de confiance, dans les contraintes | rappel **1,000** sur les 12 contrats de référence, précision **0,96 – 0,99**, P95 **4,4 – 7,6 s** (cible < 8 s), coût **0,033 €** par analyse (cible < 0,15 €) — gate sur le vrai modèle |
+| **La v2 répond au besoin** — contrats longs, score de confiance, dans les contraintes | rappel **1,000** sur les 12 contrats de référence, précision **0,95 – 0,99**, P95 **4,4 – 7,6 s** (cible < 8 s), coût **0,033 €** par analyse (cible < 0,15 €) — gate sur le vrai modèle |
 | **La v1 ne casse jamais** | `app/api_v1.py` non modifié ; `scripts/client_v1.py` vérifié par un test d'acceptance à chaque fusion ; un test garantit que la réponse v1 ne gagne aucun champ |
 | **Chaque livraison est automatique, testée, réversible** | toutes les releases depuis `v2.0.0` publiées par la chaîne, aucune à la main ; un gate en échec a **réellement bloqué** une livraison ; retour arrière en un clic nommé ou par un workflow |
 
