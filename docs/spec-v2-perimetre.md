@@ -25,6 +25,11 @@
 `{"clauses": [{"type", "extrait", "confiance", "sections"}], "confiance_globale", "modele", "version", "sections", "appels_llm",
 "latence_ms", "cout_eur"}`. Champs additifs prévus par la conception (non testés par le dépôt, ajoutés sans casser la forme) :
 `request_id`, libellé du niveau de certitude, en-tête de version sur la réponse.
+**Constaté le 23/09 : seul l'en-tête existait, et seulement sur la gateway. Écrits le 23/09 (brique F1)** :
+`libelle` (`haute` / `moyenne` / `basse`, bornes H6 lues dans `parametres.seuils_libelle` du bundle), `request_id`
+(`req_` + 12 hexa, dans la réponse 200 et la 503, dans les journaux et sur le span `analyse.requete`), en-tête
+`X-Mardik-Version` sur `/v2` (succès et 503). Un `422` ne porte pas de `request_id` : il est produit avant tout journal et
+toute trace, il n'y a rien à corréler. `/v1` ne gagne aucun champ (test de garde).
 
 ## 3. Contraintes (ce qui doit rester vrai)
 
@@ -77,6 +82,7 @@ Deux critères ajoutés par la conception, sans test fourni — à écrire :
 | Note du gate | F1 | rappel (imposé) + précision rapportée | `eval/run_eval.py` |
 | Rollback | manuel | manuel, **sans** découpage canary / actif | formateur, 21/09 |
 | Architecture | trois conteneurs derrière un routeur | un processus, gateway en interne lisant le registre à chaque requête | `app/gateway.py`, `docker-compose.yml` |
+| En-tête de version | `X-Mardik-Release`, sur toutes les réponses, `/v1` comprise | `X-Mardik-Version`, sur `/v2` et la gateway ; `/v1` inchangée | nom imposé par le test d'acceptance fourni (`test_observabilite.py`) ; `/v1` : exigence 2 du CTO, aucun ajout même additif |
 
 Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md` du dossier du brief (§D quater).
 
@@ -116,7 +122,22 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 
 **Les 12 briques sont faites.** `chantier1/dev` : 19 commits, 50 tests, 10/10 tests d'acceptance du brief verts,
 `ruff check` propre. Reste hors de cette liste : `docs/exploitation.md` (runbook, 7 sections, vide) et le frontend
-(livrable N12, jamais décidé).
+(livrable N12, jamais décidé). *(État du 21/09. Le runbook a été écrit le 22/09 ; le frontend, ci-dessous.)*
+
+**Ajoutées le 23/09, décision d'Era — le frontend avant le Chantier 2** (numérotées F pour ne pas décaler les briques 13–16
+du Chantier 2) :
+
+- **F1.** `app/api_v2.py`, `app/gateway.py`, `app/pipeline/confiance.py` — les champs additifs de §2 que le frontend affiche :
+  `libelle`, `request_id`, `X-Mardik-Version`. ✅ 16 tests (`tests/test_api_v2_champs_frontend.py`).
+- **F2.** `app/static/index.html`, servie sur `GET /` par `app/main.py` — la page unique de H15 : coller ou charger un contrat,
+  choisir la route (production = gateway, ou v2 directe), afficher le niveau de certitude **avec sa règle de décision**, le
+  score, les clauses et leur extrait (surligné sous 0,7), la version qui a répondu, le `request_id`, la durée et le coût ;
+  rend aussi une réponse v1 (liste de clauses, alerte de troncature) et les erreurs 422 / 503 en français. Aucune ressource
+  externe, aucun HTML construit depuis les données. ✅ 5 tests (`tests/test_frontend.py`) + vérification dans un navigateur
+  (fichier chargé, réponse v2, réponse v1, 422, largeur mobile, mode sombre, console sans erreur) — un défaut trouvé ainsi
+  (le mot « null » affiché sous une réponse v1) et corrigé. **Limite** : le JavaScript de la page n'a pas de test automatisé,
+  seulement cette vérification manuelle outillée.
+- **Reste pour N12** : l'**hébergement** (un lien public) — décision séparée, voir `ETAT.md` du dossier du brief.
 
 **La question de §3 (« taille de section »), mesurée deux fois le 21/09 — sur deux fournisseurs différents :**
 
