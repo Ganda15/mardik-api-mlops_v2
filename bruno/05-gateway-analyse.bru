@@ -16,6 +16,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   Le client v1 (scripts/client_v1.py) appelle cette route sans rien changer pendant le canary — test
   d'acceptance 3. Regarder l'en-tête `X-Mardik-Version` de la réponse : v1.0.0 ou la version canary, tirée

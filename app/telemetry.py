@@ -60,6 +60,8 @@ class Mesure:
     cout_eur: float = 0.0
     appels_llm: int = 0
     tokens: int = 0
+    tokens_entree: int = 0     # brique 23 : le partage entrée/sortie, sans lui le coût réel est incalculable
+    tokens_sortie: int = 0
     tronque: bool = False
 
     def to_dict(self) -> dict[str, Any]:

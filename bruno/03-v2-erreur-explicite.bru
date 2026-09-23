@@ -16,6 +16,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 422
+}
+
 docs {
   Test d'acceptance 2 : une requête invalide reçoit un code et un message, jamais un plantage. 422 ici
   (texte vide) ; 413 au-delà du plafond de taille ; 503 si le fournisseur est injoignable (avec le

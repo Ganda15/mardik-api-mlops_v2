@@ -16,6 +16,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 401
+}
+
 docs {
   Brique F3 : un lien public qui appelle Azure est un budget que n'importe qui peut dépenser. Sans
   `X-API-Key` : 401, avant tout appel au modèle (donc gratuit). La page GET reste ouverte ; seuls les POST

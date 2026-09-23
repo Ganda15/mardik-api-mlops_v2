@@ -16,6 +16,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   Exigence 2 du CTO : « la v1 ne casse jamais ». La réponse n'a que quatre champs — clauses, modele,
   version, tronque — et n'en gagne aucun, même additif (tests/test_api_v2_champs_frontend.py). Sur un

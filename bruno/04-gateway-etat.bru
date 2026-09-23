@@ -10,6 +10,10 @@ get {
   auth: none
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   Test d'acceptance 4, seconde moitié : « on peut identifier quelle version sert quel trafic ».
   `active`, `canary`, `canary_percent` — et `source` : le pourcentage EFFECTIF (registre, ou variable

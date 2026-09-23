@@ -113,13 +113,13 @@ def analyser_v2(
 
         parallelisme = max(1, int(bundle.parametres.get("parallelisme", 4)))
 
-        def _traiter(section: Section) -> tuple[list[Clause], float]:
+        def _traiter(section: Section) -> tuple[list[Clause], float, int, int]:
             with telemetry.tracer.start_as_current_span("llm.appel") as span_llm:
                 span_llm.set_attribute("mardik.section", section.indice)
                 clauses, reponse_llm = extraire(section, client)
                 span_llm.set_attribute("llm.latence_ms", reponse_llm.latence_ms)
                 span_llm.set_attribute("llm.tokens", reponse_llm.tokens)
-            return clauses, client.cout_eur(reponse_llm)
+            return clauses, client.cout_eur(reponse_llm), reponse_llm.tokens_entree, reponse_llm.tokens_sortie
 
         # Un contexte copié PAR tâche (un même Context ne peut pas être entré par deux
         # threads) : analyse.requete reste le parent de chaque llm.appel dans la trace.
@@ -146,8 +146,10 @@ def analyser_v2(
             # cancel_futures : une panne sur la section 2 n'appelle (ne paie) pas les suivantes
             executor.shutdown(wait=True, cancel_futures=True)
 
-        par_section = [clauses for clauses, _ in resultats]
-        cout_total = sum(cout for _, cout in resultats)
+        par_section = [r[0] for r in resultats]
+        cout_total = sum(r[1] for r in resultats)
+        tokens_entree = sum(r[2] for r in resultats)
+        tokens_sortie = sum(r[3] for r in resultats)
 
         clauses_consolidees = consolider(par_section)
         clauses_notees, confiance_globale = scorer(clauses_consolidees, texte)
@@ -163,6 +165,9 @@ def analyser_v2(
                 score=confiance_globale,
                 cout_eur=round(cout_total, 6),
                 appels_llm=len(sections),
+                tokens=tokens_entree + tokens_sortie,
+                tokens_entree=tokens_entree,
+                tokens_sortie=tokens_sortie,
                 tronque=False,
             )
         )
