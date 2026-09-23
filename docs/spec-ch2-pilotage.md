@@ -65,6 +65,8 @@ Les cinq tests « L'observabilité qui pilote » du brief, chacun rattaché à s
 Critères ajoutés par la conception :
 - **A3** — le détecteur est **mesuré dans les deux sens** avant la démo : trafic dégradé → taux de détection ; trafic sain →
   taux de fausses alertes. Les deux chiffres notés (conception §3).
+  ✅ **Mesuré le 23/09** (brique 18b, données réelles de la version actuelle) : détection de la dérive du score **100 %**,
+  fausses alertes de dérive **0 %**. Révèle aussi que le P95 < 8 s n'est pas tenu sur des requêtes réelles (runbook §9).
 - **A4** — sous 30 mesures, l'état affiché est « données insuffisantes » et **aucune** promotion ne part.
 
 Les cinq tests fournis de `tests/acceptance/test_observabilite.py` sont **verts depuis le Chantier 1** et restent verts.
@@ -93,7 +95,7 @@ Les cinq tests fournis de `tests/acceptance/test_observabilite.py` sont **verts 
 | **15** ✅ | le watcher, un tour : alerte tracée (signal, valeur, seuil, fenêtre) ; promotion automatique 10 → 50 → 100 si **tous** les critères tiennent, sinon `refus_promotion` ; **jamais** de rollback | E7 (détection), E8, test 7 |
 | **16** ✅ | l'API de pilotage (§2) + la page `/pilotage` : bannière d'alerte, signaux, journal, bouton de rollback avec nom obligatoire ; **et** `.github/workflows/rollback.yml` (`workflow_dispatch`) sur le registre publié | E7 (décision), test 6, test 10 |
 | **17** ✅ | capture des cas < 0,5 avec masquage ; script d'ajout étiqueté au jeu d'évaluation (version N+1) | E9, test 8 |
-| **18** | procédure d'ajustement des seuils (ligne `ajustement_seuil` avec le commit) ; mesure du détecteur dans les deux sens ; transcript réel du test 6 de bout en bout | E10, A3 |
+| **18** ✅ | procédure d'ajustement des seuils (ligne `ajustement_seuil` avec le commit) ; mesure du détecteur dans les deux sens ; transcript réel du test 6 de bout en bout | E10, A3 |
 
 **Risque dit tel quel** : six briques pour une échéance au lendemain. Si le temps manque, l'ordre ci-dessus livre d'abord ce que
 les tests du brief exigent (13 → 16) ; 17 et 18 viennent ensuite. Aucune brique n'est déclarée faite sans son test.
