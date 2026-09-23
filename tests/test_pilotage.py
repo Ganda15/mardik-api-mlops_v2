@@ -6,7 +6,7 @@ Spec Ch2 §2 (contrat figé avant le code) :
     POST /pilotage/rollback      → 201 + la ligne créée · 422 sans acteur · 409 rien à annuler
                                    · 401 mauvais jeton · 403 aucun jeton d'administration configuré
 Le retour arrière est une décision HUMAINE (CTO) : le clic porte un nom, jamais anonyme, et la ligne de
-journal relie le rollback à l'alerte qui l'a motivé. Décision d'Era du 23/09 : aussi par la chaîne
+journal relie le rollback à l'alerte qui l'a motivé. Décision du 23/09 : aussi par la chaîne
 (``.github/workflows/rollback.yml``, déclenchement manuel).
 """
 from __future__ import annotations

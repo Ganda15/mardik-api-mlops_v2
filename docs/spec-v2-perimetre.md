@@ -124,7 +124,7 @@ Le registre des décisions complet, avec les citations, est dans `CONTINUITE.md`
 `ruff check` propre. Reste hors de cette liste : `docs/exploitation.md` (runbook, 7 sections, vide) et le frontend
 (livrable N12, jamais décidé). *(État du 21/09. Le runbook a été écrit le 22/09 ; le frontend, ci-dessous.)*
 
-**Ajoutées le 23/09, décision d'Era — le frontend avant le Chantier 2** (numérotées F pour ne pas décaler les briques 13–16
+**Ajoutées le 23/09 — le frontend avant le Chantier 2** (numérotées F pour ne pas décaler les briques 13–16
 du Chantier 2) :
 
 - **F1.** `app/api_v2.py`, `app/gateway.py`, `app/pipeline/confiance.py` — les champs additifs de §2 que le frontend affiche :
@@ -137,7 +137,7 @@ du Chantier 2) :
   (fichier chargé, réponse v2, réponse v1, 422, largeur mobile, mode sombre, console sans erreur) — un défaut trouvé ainsi
   (le mot « null » affiché sous une réponse v1) et corrigé. **Limite** : le JavaScript de la page n'a pas de test automatisé,
   seulement cette vérification manuelle outillée.
-- **F3.** `app/securite.py`, branché dans `app/main.py` — **décision d'Era du 23/09 : le lien public passe par un tunnel depuis
+- **F3.** `app/securite.py`, branché dans `app/main.py` — **décision du 23/09 : le lien public passe par un tunnel depuis
   son PC (option C)**. Une page publique qui appelle Azure = un budget que n'importe qui peut dépenser, donc deux gardes, actives
   seulement sur l'instance lancée avec leur variable (jamais dans `.env`) : `MARDIK_API_KEY` → chaque POST exige `X-API-Key`
   (conception Ch1 §2.3), `401` sinon ; `MARDIK_BUDGET_JOUR_EUR` → `429` au-delà du coût des 24 dernières heures (lu dans les

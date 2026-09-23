@@ -83,7 +83,7 @@ schema_sortie:
 
 # Brique 23 (23/09) : deux tarifs, entrée et sortie — la sortie coûte 6× l'entrée sur gpt-5.4. Valeurs = catalogue
 # OpenAI relayé par la liste publique OpenRouter (https://openrouter.ai/api/v1/models, lu le 23/09), en $ / 1 000
-# jetons. Le tarif Azure de la ressource d'Era est normalement le même catalogue — à confirmer sur le portail.
+# jetons. Le tarif Azure de la ressource du projet est normalement le même catalogue — à confirmer sur le portail.
 # L'ancien tarif unique 0,002 (hérité de la v1) sous-estimait le coût d'un facteur 1,6 à 2,3 (mesuré sur c02 et c12).
 cout_par_1k_entree: 0.0025
 cout_par_1k_sortie: 0.015

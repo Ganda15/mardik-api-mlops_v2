@@ -1,4 +1,4 @@
-# Retour arrière PAR LA CHAÎNE — Chantier 2, brique 16 (décision d'Era du 23/09 : le bouton de la page
+# Retour arrière PAR LA CHAÎNE — Chantier 2, brique 16 (décision du 23/09 : le bouton de la page
 # de pilotage ET ce workflow). Toujours déclenché par un humain (arbitrage du CTO : jamais automatique) :
 # GitHub → Actions → « rollback » → Run workflow → votre nom + le motif.
 #

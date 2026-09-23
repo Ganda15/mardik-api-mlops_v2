@@ -1,4 +1,4 @@
-"""Brique F3 — protéger l'instance exposée par un tunnel (option C, décision d'Era du 23/09).
+"""Brique F3 — protéger l'instance exposée par un tunnel (option C, décision du 23/09).
 
 Un lien public vers une route qui appelle Azure, c'est un budget que n'importe qui peut
 dépenser. Deux protections, actives SEULEMENT sur l'instance lancée avec les variables :

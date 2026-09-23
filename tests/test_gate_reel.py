@@ -1,6 +1,6 @@
 """Brique 21 (23/09) — le gate RÉEL, à la main, prouvé par un tag ; la publication peut l'exiger.
 
-Ce test ne joue pas le workflow (poser les secrets Azure est l'action d'Era). Il fige sa forme : manuel
+Ce test ne joue pas le workflow (poser les secrets Azure est une action manuelle, hors dépôt). Il fige sa forme : manuel
 seulement, MOCK off, une passe par défaut, le rapport en artefact, le tag ``eval-ok/<sha>`` ; et côté
 llmops.yml, une publication qui REFUSE sans ce tag quand la variable est posée — et ne change rien sinon.
 """

@@ -1,6 +1,6 @@
 """Protection d'une instance exposée publiquement. Brique F3.
 
-Décision d'Era du 23/09 : le lien public du frontend (livrable N12) passe par un tunnel
+Décision du 23/09 : le lien public du frontend (livrable N12) passe par un tunnel
 depuis son PC (option C). Une page publique qui appelle Azure, c'est un budget que n'importe
 qui peut dépenser. Deux gardes, actives SEULEMENT si leur variable d'environnement est posée
 sur l'instance exposée — jamais dans ``.env`` :
