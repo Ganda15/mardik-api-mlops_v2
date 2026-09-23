@@ -40,3 +40,25 @@ def test_main_lance_la_commande_sans_docker_ici(monkeypatch, capsys):
     assert demo.main(["public"]) == 0
     assert appels == [demo.commande("public")]
     assert "https://exemple.trycloudflare.com" in capsys.readouterr().out
+
+
+def test_le_lien_du_tunnel_est_lu_depuis_le_dernier_demarrage_du_conteneur(monkeypatch):
+    """23/09 : un conteneur tunnel redemarre garde ses anciens journaux — le lanceur affichait l'adresse
+    de la veille, morte. Le lien doit venir des journaux POSTERIEURS au demarrage du conteneur."""
+    appels = []
+
+    class _R:
+        def __init__(self, out):
+            self.stdout = out
+            self.returncode = 0
+
+    def _run(cmd, **kw):
+        appels.append(cmd)
+        if "inspect" in cmd:
+            return _R("2026-09-23T17:40:00.000000000Z\n")
+        return _R("INF https://nouveau-lien.trycloudflare.com\n")
+
+    monkeypatch.setattr(demo.subprocess, "run", _run)
+    assert demo.lien_tunnel() == "https://nouveau-lien.trycloudflare.com"
+    logs = next(c for c in appels if "logs" in c)
+    assert "--since" in logs and "2026-09-23T17:40:00" in logs[logs.index("--since") + 1]

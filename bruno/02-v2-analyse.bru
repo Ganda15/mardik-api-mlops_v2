@@ -16,6 +16,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   Test d'acceptance 1 : la réponse respecte le contrat (docs/spec-v2-perimetre.md §2) — clauses avec
   extrait littéral et confiance, `confiance_globale`, `libelle` (haute / moyenne / basse : la règle de

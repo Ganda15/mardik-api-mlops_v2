@@ -10,6 +10,10 @@ get {
   auth: none
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   Chantier 2, briques 14 et 16. Par version : requêtes, `etat` (« donnees_insuffisantes » sous 30
   requêtes — 5 en démo, par configuration), P95, coût moyen, taux d'erreur, part des scores < 0,5, médiane

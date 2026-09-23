@@ -34,10 +34,16 @@ def commande(action: str) -> list[str]:
 
 
 def lien_tunnel() -> str | None:
-    """Le lien est dans les journaux du conteneur tunnel, quelques secondes après son démarrage."""
+    """Le lien est dans les journaux du conteneur tunnel, quelques secondes après son démarrage.
+    Seulement les journaux POSTÉRIEURS à ce démarrage : un conteneur redémarré garde les anciens, et
+    l'adresse de la veille (morte) serait renvoyée — arrivé le 23/09."""
+    depuis = subprocess.run(["docker", "inspect", "--format", "{{.State.StartedAt}}", "mardik-api-mlops_v2-tunnel-1"],
+                            cwd=RACINE, capture_output=True, text=True, check=False).stdout.strip()
     for _ in range(10):
-        sortie = subprocess.run(["docker", "compose", "--profile", "public", "logs", "tunnel"],
-                                cwd=RACINE, capture_output=True, text=True, check=False).stdout
+        cmd = ["docker", "compose", "--profile", "public", "logs"]
+        if depuis:
+            cmd += ["--since", depuis]
+        sortie = subprocess.run([*cmd, "tunnel"], cwd=RACINE, capture_output=True, text=True, check=False).stdout
         liens = _LIEN.findall(sortie)
         if liens:
             return liens[-1]

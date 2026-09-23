@@ -10,6 +10,10 @@ get {
   auth: none
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   Test d'acceptance 10 : tout ajustement — seuil, promotion, refus de promotion, rollback,
   enrichissement — avec le signal qui l'a déclenché, la valeur, le seuil, l'acteur (« watcher », ou le nom

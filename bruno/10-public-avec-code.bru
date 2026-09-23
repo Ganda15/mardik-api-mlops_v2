@@ -20,6 +20,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: eq 200
+}
+
 docs {
   La même requête avec le code de `public.env` (onglet Secrets de l'environnement, jamais dans un
   fichier). Vrai appel au modèle, vrai coût : il compte dans le plafond des 24 h.

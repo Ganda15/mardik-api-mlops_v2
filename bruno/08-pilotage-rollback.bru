@@ -21,6 +21,10 @@ body:json {
   }
 }
 
+assert {
+  res.status: in [201, 401, 409]
+}
+
 docs {
   Test d'acceptance 6, la moitié humaine : le watcher a alerté, une PERSONNE décide. Refus explicites :
   403 sans jeton configuré, 401 mauvais jeton, 422 sans `acteur` (un retour arrière n'est jamais anonyme),

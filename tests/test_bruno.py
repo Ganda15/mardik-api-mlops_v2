@@ -24,6 +24,7 @@ def test_une_requete_par_etape_de_la_demo_avec_son_explication():
     for f in fichiers:
         t = f.read_text(encoding="utf-8")
         assert "meta {" in t and "docs {" in t, f.name
+        assert re.search(r"assert \{\s*res\.status: (eq \d{3}|in \[)", t), f.name   # bru run verifie le code attendu
         assert re.search(r"url: \{\{(baseUrl|publicUrl)\}\}/", t), f.name     # jamais une adresse en dur
         seqs.append(int(re.search(r"seq: (\d+)", t).group(1)))
     assert seqs == sorted(seqs) and len(set(seqs)) == len(seqs)
