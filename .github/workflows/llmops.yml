@@ -78,10 +78,14 @@ jobs:
         with:
           python-version: "3.11"
       - run: uv sync
+      - name: Test des données (C13) — eval/attendus.jsonl avant tout le reste
+        run: uv run python -m eval.valider_attendus
       - name: Tests d'intégration (hérités de la remédiation)
         run: uv run pytest -q tests/integration
       - name: Tests d'acceptance (le brief) + nos tests unitaires par brique
         run: uv run pytest -q
+      - name: Couverture (C12) — cible 80 %, mesurée 83 % le 23/09 ; échoue en dessous
+        run: uv run pytest -q --cov=app --cov=ops --cov=eval --cov-report=term-missing --cov-fail-under=80
 
   filtre-chemins:
     needs: tests
