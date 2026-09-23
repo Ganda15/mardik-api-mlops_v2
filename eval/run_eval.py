@@ -77,6 +77,7 @@ class Rapport:
     # Brique 20 : la signature de la version saine (médiane du score global, part < 0,5, nombre d'analyses),
     # calculée SEULEMENT avec le vrai modèle — None en MOCK. Portée par le manifeste (ops/deploy.publier).
     signature: dict[str, Any] | None = None
+    modele: str | None = None       # le modèle réellement mesuré (bundle.modele au moment du gate)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -250,6 +251,7 @@ def evaluer(
         seuil=seuil,
         precision=precision_globale,
         signature=signature,
+        modele=bundle.modele,
     )
 
     if historique is not None:
