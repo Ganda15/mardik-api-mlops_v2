@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -124,6 +125,10 @@ def main(argv: list[str] | None = None) -> int:
     j.add_argument("--ref", default="HEAD~1", help="version précédente du fichier (défaut : le commit d'avant)")
     j.add_argument("--acteur", default=None)
     args = parser.parse_args(argv)
+    # La console de PowerShell 5.1 est en cp1252 : un caractère absent (ex. une flèche) y faisait planter l'affichage
+    # APRÈS l'écriture au journal (23/09). Un caractère non affichable est remplacé, jamais une erreur.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
 
     if args.commande == "mesurer":
         par = mesurer(MetricsStore().lire(), depuis_jours=args.jours)
@@ -147,7 +152,7 @@ def main(argv: list[str] | None = None) -> int:
                                 acteur=args.acteur or _git("log", "-1", "--format=%an"), motif=args.motif,
                                 observe=observe, registry=reg)
     for c in changements:
-        print(f"{c['cle']} : {c['ancien']} → {c['nouveau']} ({c['sens']})")
+        print(f"{c['cle']} : {c['ancien']} -> {c['nouveau']} ({c['sens']})")
     print(f"{n} ajustement(s) tracé(s) au journal de pilotage.")
     return 0
 

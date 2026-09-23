@@ -88,3 +88,26 @@ def test_la_ligne_de_commande_compare_au_commit_precedent_et_trace(registry, tmp
     ligne = registry.journal()[-1]
     assert ligne["signal"] == "rollback_alerte.taux_erreur_max" and ligne["commit"] == "b7d01f3"
     assert ligne["acteur"] == "Era" and ligne["seuil"] == {"ancien": 0.1, "nouveau": 0.08}
+
+
+def test_la_ligne_de_commande_ne_plante_pas_dans_une_console_windows(registry, tmp_path, monkeypatch):
+    """23/09, premier usage réel : la ligne de journal était écrite, puis print('→') plantait — la console de
+    PowerShell 5.1 est en cp1252, sans flèche. Reproduit ici avec une sortie cp1252."""
+    import io
+    import sys
+
+    import ops.ajuster_seuils as mod
+    avant, apres = charger_seuils(), charger_seuils()
+    apres["gate"]["latence_p95_max_ms"] = 7500
+    fichier = tmp_path / "thresholds.yml"
+    fichier.write_text(yaml.safe_dump(apres, allow_unicode=True), encoding="utf-8")
+    monkeypatch.setenv("MARDIK_SEUILS", str(fichier))
+    monkeypatch.setenv("REGISTRY_PATH", str(registry.root))
+    reponses = {("show", "HEAD~1:eval/thresholds.yml"): yaml.safe_dump(avant, allow_unicode=True),
+                ("rev-parse", "--short", "HEAD"): "c0ffee1", ("log", "-1", "--format=%an"): "Era"}
+    monkeypatch.setattr(mod, "_git", lambda *args: reponses[args])
+    console = io.TextIOWrapper(io.BytesIO(), encoding="cp1252")
+    monkeypatch.setattr(sys, "stdout", console)
+    assert main(["journaliser", "--motif", "test console"]) == 0
+    console.flush()
+    assert b"gate.latence_p95_max_ms" in console.buffer.getvalue()
