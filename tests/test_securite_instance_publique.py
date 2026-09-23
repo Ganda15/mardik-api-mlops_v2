@@ -96,3 +96,25 @@ def test_la_cle_passe_avant_le_budget(client, contrat, monkeypatch, metriques):
     monkeypatch.setenv("MARDIK_BUDGET_JOUR_EUR", "0.10")
     _depense(metriques, 0.12)
     assert client.post("/v2/analyse", json={"texte": contrat("c01")}).status_code == 401
+
+
+# --- l'instance publique échoue fermée : sans clé, elle ne démarre pas --------------------
+
+
+def test_instance_publique_refuse_de_demarrer_sans_cle(monkeypatch):
+    """Docker lance le service public avec MARDIK_EXIGER_CLE=1 : un fichier de code vide ou
+    oublié ne doit jamais publier un lien ouvert sur le budget Azure."""
+    from app.main import create_app
+
+    monkeypatch.setenv("MARDIK_EXIGER_CLE", "1")
+    monkeypatch.delenv("MARDIK_API_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="MARDIK_API_KEY"):
+        create_app()
+
+
+def test_instance_publique_demarre_avec_une_cle(monkeypatch):
+    from app.main import create_app
+
+    monkeypatch.setenv("MARDIK_EXIGER_CLE", "1")
+    monkeypatch.setenv("MARDIK_API_KEY", CLE)
+    assert create_app() is not None

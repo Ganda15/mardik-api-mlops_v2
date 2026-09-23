@@ -31,6 +31,18 @@ from app.telemetry import MetricsStore
 FENETRE_BUDGET_S = 24 * 3600
 
 
+def verifier_configuration() -> None:
+    """Échec fermé : une instance marquée publique (``MARDIK_EXIGER_CLE=1``, posé par le
+    service ``public`` de docker-compose) refuse de démarrer sans ``MARDIK_API_KEY``. Un fichier
+    de code vide ou oublié ne doit jamais ouvrir un lien public sur le budget Azure."""
+    if os.environ.get("MARDIK_EXIGER_CLE", "").strip() == "1" and not os.environ.get(
+        "MARDIK_API_KEY", ""
+    ).strip():
+        raise RuntimeError(
+            "instance publique sans MARDIK_API_KEY : démarrage refusé (voir docs/exploitation.md §8)"
+        )
+
+
 def _euros(montant: float) -> str:
     """3 décimales, virgule française : à 2 décimales, 0,006 et 0,005 s'affichaient tous deux « 0.01 »."""
     return f"{montant:.3f}".replace(".", ",") + " €"

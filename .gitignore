@@ -16,6 +16,7 @@ uv.lock
 # Env
 .env
 .env.local
+public.env
 
 # IDE
 .vscode/

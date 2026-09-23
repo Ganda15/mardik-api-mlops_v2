@@ -1,15 +1,17 @@
 services:
-  # L'application : /v1 (historique), /v2 (à livrer), /analyse (gateway canary).
+  # L'application : /v1 (historique), /v2 (à livrer), /analyse (gateway canary), la page sur /.
   app:
     build: .
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"   # ce poste seulement (23/09 : sans 127.0.0.1, ouvert à tout le réseau local)
     env_file: .env
     environment:
       LLM_PROXY_URL: http://proxy:8080
       METRICS_PATH: /app/ops/metrics.jsonl
       REGISTRY_PATH: /app/ops/registry
+      OTEL_TRACES: otlp                                                   # traces vers Jaeger
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318/v1/traces
     volumes:
       - ./ops:/app/ops          # registre, journal et métriques partagés avec le dashboard
       - ./models:/app/models
@@ -17,26 +19,26 @@ services:
     depends_on:
       - proxy
     extra_hosts:
-      - "host.docker.internal:host-gateway"   # pour joindre Ollama sur la machine hôte
+      - "host.docker.internal:host-gateway"   # pour joindre Ollama et Jaeger sur la machine hôte
 
   # Le proxy de dérive, entre l'app et le fournisseur LLM (Azure ou Ollama).
   proxy:
     build: .
     command: python -m ops.drift_proxy
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     env_file: .env
     environment:
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # Le tableau de bord (à implémenter : ops/dashboard.py).
+  # Le tableau de bord.
   dashboard:
     build: .
     command: python -m ops.dashboard --serve --port 8501
     ports:
-      - "8501:8501"
+      - "127.0.0.1:8501:8501"
     env_file: .env
     environment:
       METRICS_PATH: /app/ops/metrics.jsonl
@@ -45,3 +47,44 @@ services:
       - ./ops:/app/ops
     depends_on:
       - app
+
+  # --- Le lien public (profil « public », décision d'Era du 23/09, option C) ----------------
+  # Démarre seulement avec : docker compose --profile public up -d
+  # Code d'accès et plafond : public.env, créé par  uv run python -m scripts.nouveau_code_public
+  # Procédure complète : docs/exploitation.md §8.
+
+  # L'instance verrouillée. Aucun port publié : seul le tunnel l'atteint, par le réseau Docker.
+  # MARDIK_EXIGER_CLE=1 : sans code dans public.env, elle refuse de démarrer (échec fermé).
+  public:
+    profiles: ["public"]
+    build: .
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    env_file:
+      - .env
+      - path: public.env
+        required: false         # absent = pas de clé = l'instance refuse de démarrer
+    environment:
+      MARDIK_EXIGER_CLE: "1"
+      LLM_PROXY_URL: http://proxy:8080
+      METRICS_PATH: /app/ops/metrics.jsonl   # même journal : le plafond compte toutes les analyses
+      REGISTRY_PATH: /app/ops/registry
+      OTEL_TRACES: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318/v1/traces
+    volumes:
+      - ./ops:/app/ops
+      - ./models:/app/models
+      - ./eval:/app/eval
+    depends_on:
+      - proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Le tunnel Cloudflare vers l'instance verrouillée. Le lien https://….trycloudflare.com est
+  # dans ses journaux et change à chaque démarrage :
+  #   docker compose logs tunnel | Select-String trycloudflare
+  tunnel:
+    profiles: ["public"]
+    image: cloudflare/cloudflared:2026.9.1
+    command: tunnel --no-autoupdate --url http://public:8000
+    depends_on:
+      - public
