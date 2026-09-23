@@ -1,0 +1,38 @@
+# Tous les seuils de Mardik, en un seul fichier versionné (Chantier 2, brique 13).
+# Conception Ch2 §3 et §9 : en changer un = un commit, par une pull request. Le fichier est sous eval/
+# pour que le filtre de chemin de llmops.yml déclenche le gate dès la PR : un seuil qui ferait échouer
+# la version en place se voit avant la fusion. Jamais baisser un seuil pour faire passer une version.
+# Valeurs de travail : les marges seront ajustées sur les distributions observées (procédure §9).
+# Démo : un autre fichier peut le remplacer par la variable MARDIK_SEUILS (jamais par le code).
+
+version: 1
+
+gate:                          # le gate d'évaluation (brique 7) — valeurs inchangées depuis le Chantier 1
+  rappel_min: 0.75             # note globale ; chaque contrat a aussi son seuil_note dans attendus.jsonl
+  latence_p95_max_ms: 8000     # contrainte client : P95 < 8 s, contrats longs compris
+  cout_moyen_max_eur: 0.15     # contrainte client : < 0,15 € par analyse en moyenne
+
+fenetre:                       # la fenêtre d'observation de la production
+  requetes_min: 30             # en dessous : « données insuffisantes », aucune décision
+  requetes: 50                 # les 50 dernières requêtes…
+  jours: 2                     # … ou les 2 derniers jours, la plus grande des deux
+
+rollback_alerte:               # franchi → alerte ; la décision de reculer est HUMAINE (CTO)
+  part_score_bas_delta_max: 0.15   # part des scores < 0,5 au-delà de la signature + 15 points
+  mediane_delta_min: -0.15         # médiane sous la signature − 0,15
+  taux_erreur_max: 0.10
+  p95_ms_max: 8000
+
+promotion:                     # tous les critères, aucun ne compense un autre ; décision automatique
+  requetes_min: 30
+  jours_min: 1
+  p95_ms_max: 8000
+  taux_erreur_delta_max: 0.02      # canary ≤ stable + 2 points
+  part_score_bas_delta_max: 0.05   # canary ≤ stable + 5 points
+  mediane_delta_min: -0.05         # canary ≥ stable − 0,05
+  cout_moyen_eur_max: 0.15
+  paliers: [10, 50, 100]
+  refus_consecutifs_alerte: 2
+
+capture:                       # enrichissement du jeu d'évaluation
+  score_global_max: 0.5            # une analyse sous ce score est capturée (après masquage)

@@ -33,6 +33,7 @@ def environnement(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.delenv("MARDIK_API_KEY", raising=False)
     monkeypatch.delenv("MARDIK_BUDGET_JOUR_EUR", raising=False)
     monkeypatch.delenv("MARDIK_EXIGER_CLE", raising=False)
+    monkeypatch.delenv("MARDIK_SEUILS", raising=False)  # brique 13 : le fichier du dépôt fait foi
     monkeypatch.setenv("METRICS_PATH", str(tmp_path / "metrics.jsonl"))
     monkeypatch.setenv("REGISTRY_PATH", str(tmp_path / "registry"))
     monkeypatch.setenv("OTEL_TRACES", "off")

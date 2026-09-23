@@ -77,7 +77,7 @@ def publier(
     bundle: str = "v2",
     commit: str | None = None,
     registry: Registry | None = None,
-    seuil: float = 0.75,
+    seuil: float | None = None,   # None → eval/thresholds.yml (brique 13)
     rapport: Any | None = None,
 ) -> dict[str, Any]:
     reg = registry or Registry()
@@ -196,7 +196,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("publier")
     p.add_argument("version")
     p.add_argument("--bundle", default="v2")
-    p.add_argument("--seuil", type=float, default=0.75)
+    p.add_argument("--seuil", type=float, default=None)
     c = sub.add_parser("canary")
     c.add_argument("version")
     c.add_argument("--pourcentage", type=int, default=None)

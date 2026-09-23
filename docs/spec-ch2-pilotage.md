@@ -1,6 +1,7 @@
 # Spec courte — Chantier 2 : l'observabilité qui pilote
 
-> **Statut : PROPOSÉE le 23/09/2026 — à valider par Era avant tout code** (règle : écrit ≠ validé).
+> **Statut : VALIDÉE par Era le 23/09/2026.** Réponses d'Era aux questions du §8 : échéance du 24/09 confirmée ; rollback
+> **par les deux chemins** (bouton de la page de pilotage ET déclenchement GitHub Actions).
 > Source qui fait foi : `Mardik-Conception-Chantier2.md` (dossier du brief, validé). Cette spec ne redécide rien : elle
 > **condense** la conception en exigences, contraintes et critères d'acceptation, et dit ce que le dépôt fait déjà.
 > Échéance annoncée en réunion le 23/09 : **Chantier 2 fini le jeudi 24/09**.
@@ -75,18 +76,20 @@ Les cinq tests fournis de `tests/acceptance/test_observabilite.py` sont **verts 
 | Rollback « s'exécute » quand le seuil est franchi (texte du brief) | alerte → clic humain | **alerte → clic humain** | arbitrage du CTO, test fourni réécrit le 21/09 ; le brief est lu à la lumière de l'annexe B |
 | Poids du canary | `weights.json`, `set_weight` | l'index du registre (`canary_percent`), `deployer_canary` | le dépôt a déjà ce mécanisme, lu à chaque requête par la gateway |
 | Journal | `ops/journal.jsonl` | `ops/registry/journal.jsonl`, **un seul** journal | le dépôt l'écrit déjà ; deux journaux = deux vérités |
+| `llmops.yml` « ne change pas » | intact | **deux lignes retirées** (`--seuil 0.75` codé en dur, gate et publication) | sans cela le fichier de seuils serait ignoré par la chaîne — « documenté mais absent » ; aucune étape ajoutée ni retirée (brique 13) |
 | Seuils | `thresholds.yml` | **`eval/thresholds.yml`** | sous `eval/`, un changement de seuil déclenche le gate dès la PR (filtre de chemin) — exactement la procédure §9 |
 | Watcher | conteneur à part, boucle 60 s / 10 min | un module appelable une fois (`tick`) ou en boucle ; service `watcher` dans `docker-compose.yml` | testable sans horloge ; même service en démo |
 | Bouton | sur le tableau de bord | page `/pilotage` servie par l'API | le tableau de bord fourni ne sert que du HTML en lecture ; la conception Ch2 H23 prévoit ce repli |
+| Rollback « via la chaîne » | le bouton appelle `redeploy` | **les deux** : le bouton agit sur la production (registre lu par la gateway) ; un workflow `rollback.yml` (`workflow_dispatch`, champs `acteur` et `motif`) agit sur le registre publié par la chaîne (artefact `registry-<version>`) et le re-publie en `-rollback` | décision d'Era du 23/09 ; `llmops.yml` reste intact, c'est un fichier à part. Limite dite : le runner ne voit pas la production locale, il agit sur l'état publié |
 
 ## 7. Ordre des briques (chacune : test rouge → code → vert → suite complète → commit)
 
 | Brique | Quoi | Ferme |
 |---|---|---|
-| **13** | `eval/thresholds.yml` + son chargeur ; `surveiller()` et le gate lisent le fichier (aucun changement de comportement) | contrainte « un seul fichier » ; manque du 22/09 |
+| **13** ✅ | `eval/thresholds.yml` + `ops/seuils.py` (échec fermé, `MARDIK_SEUILS` pour la démo) ; le gate, la publication et la chaîne lisent le fichier, valeurs inchangées. `surveiller()` est remplacé par le watcher en brique 15 | contrainte « un seul fichier » ; manque du 22/09 |
 | **14** | les cinq signaux par version sur une fenêtre, « données insuffisantes » ; le tableau de bord montre part < 0,5, médiane, déciles | E6, test 9, A4 |
 | **15** | le watcher, un tour : alerte tracée (signal, valeur, seuil, fenêtre) ; promotion automatique 10 → 50 → 100 si **tous** les critères tiennent, sinon `refus_promotion` ; **jamais** de rollback | E7 (détection), E8, test 7 |
-| **16** | l'API de pilotage (§2) + la page `/pilotage` : bannière d'alerte, signaux, journal, bouton de rollback avec nom obligatoire | E7 (décision), test 6, test 10 |
+| **16** | l'API de pilotage (§2) + la page `/pilotage` : bannière d'alerte, signaux, journal, bouton de rollback avec nom obligatoire ; **et** `.github/workflows/rollback.yml` (`workflow_dispatch`) sur le registre publié | E7 (décision), test 6, test 10 |
 | **17** | capture des cas < 0,5 avec masquage ; script d'ajout étiqueté au jeu d'évaluation (version N+1) | E9, test 8 |
 | **18** | procédure d'ajustement des seuils (ligne `ajustement_seuil` avec le commit) ; mesure du détecteur dans les deux sens ; transcript réel du test 6 de bout en bout | E10, A3 |
 
@@ -95,9 +98,9 @@ les tests du brief exigent (13 → 16) ; 17 et 18 viennent ensuite. Aucune briqu
 
 ## 8. À clarifier
 
-- **[À CLARIFIER — formateur]** « le rollback s'exécute **via la chaîne** » : le bouton qui modifie le registre lu par la gateway
+- **[TRANCHÉ par Era, 23/09 : les deux chemins, §6]** « le rollback s'exécute **via la chaîne** » : le bouton qui modifie le registre lu par la gateway
   suffit-il, ou attend-il un déclenchement GitHub Actions (`workflow_dispatch`) ? Le registre de production est local, pas sur le
   runner ; la conception a retenu le premier.
-- **[À CLARIFIER — Era]** l'échéance du 24/09 s'applique-t-elle à ce projet (elle a été dite pendant la présentation d'un camarade) ?
+- **[TRANCHÉ par Era, 23/09 : oui]** l'échéance du 24/09 s'applique-t-elle à ce projet (elle a été dite pendant la présentation d'un camarade) ?
 - **[À CLARIFIER — client]** l'anonymisation des contrats capturés : le masquage par motifs est partiel ; la question reste ouverte
   avec le client (conception §4.3).
