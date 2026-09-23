@@ -77,3 +77,46 @@ def test_ligne_vide_est_ignoree_sans_erreur(tmp_path):
     chemin = _ecrire(tmp_path, '{"contrat_id": "c01", "clauses_attendues": ["durée"]}', "", "  ")
     rapport = valider_fichier(chemin, RACINE / "eval" / "contrats")
     assert rapport["lignes"] == 1 and rapport["erreurs"] == []
+
+
+# --- suite (23/09, après PR #3 et #4) : le fichier des cas de production est validé lui aussi ---------------
+
+
+def test_les_deux_fichiers_sont_valides_ensemble(tmp_path, monkeypatch):
+    from eval.valider_attendus import valider_tout
+
+    production = tmp_path / "attendus_production.jsonl"
+    production.write_text('{"contrat_id": "c01", "clauses_attendues": ["durée"]}\n', encoding="utf-8")
+    with pytest.raises(ErreurDonnees, match=r"(deux|référence).*c01"):     # même id dans les deux : refusé
+        valider_tout(production=production, contrats=RACINE / "eval" / "contrats")
+
+
+def test_sans_fichier_de_production_la_reference_suffit(tmp_path):
+    from eval.valider_attendus import valider_tout
+
+    rapport = valider_tout(production=tmp_path / "absent.jsonl", contrats=RACINE / "eval" / "contrats")
+    assert rapport["reference"]["lignes"] == 12 and rapport["production"] is None
+
+
+def test_un_cas_de_production_mal_forme_est_signale_avec_son_fichier(tmp_path):
+    from eval.valider_attendus import valider_tout
+
+    production = tmp_path / "attendus_production.jsonl"
+    production.write_text('{"contrat_id": "prod-req_x", "clauses_attendues": ["clause magique"]}\n', encoding="utf-8")
+    with pytest.raises(ErreurDonnees, match=r"attendus_production.*clause magique"):
+        valider_tout(production=production, contrats=RACINE / "eval" / "contrats")
+
+
+def test_le_fichier_de_production_reel_du_depot_est_valide():
+    from eval.valider_attendus import CHEMIN_PRODUCTION_DEFAUT, valider_tout
+
+    rapport = valider_tout(production=CHEMIN_PRODUCTION_DEFAUT, contrats=RACINE / "eval" / "contrats")
+    assert rapport["production"]["contrats"] == ["prod-req_0f26491a2c08"]
+
+
+def test_la_ligne_de_commande_valide_les_deux(capsys, monkeypatch, tmp_path):
+    from eval.valider_attendus import main
+
+    monkeypatch.setenv("ATTENDUS_PRODUCTION_PATH", str(tmp_path / "absent.jsonl"))
+    assert main([]) == 0
+    assert "12 contrats" in capsys.readouterr().out

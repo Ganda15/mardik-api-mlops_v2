@@ -88,6 +88,10 @@ gate, par la chaîne `needs:` déjà en place.
   run: uv run python -m eval.valider_attendus
 ```
 
+**Depuis PR #4** les cas de production vivent dans `eval/attendus_production.jsonl` (le test fourni fige les 12 de
+référence) : le validateur le contrôle de la même façon, et refuse un `contrat_id` présent dans les deux fichiers —
+sinon le rejeu noterait deux fois le même contrat sous deux attentes. Absent : « rien de plus à valider ».
+
 **Preuve que ça mord** : une mutation en mémoire (vocabulaire des clauses vidé) fait échouer 5 des 9
 tests du fichier — la validation dépend réellement du vocabulaire réel, pas d'un chemin qui ne teste
 rien.
