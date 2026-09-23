@@ -189,6 +189,19 @@ def analyser_v2(
     )
 
 
+def capturer_si_peu_sur(texte: str, reponse: "ReponseAnalyseV2", telemetry: Telemetry) -> None:
+    """Brique 17 (Ch2) : une analyse peu sûre devient un candidat du jeu d'évaluation (masqué).
+    Appelé par les routes, pas par ``analyser_v2`` : le gate d'évaluation ne doit rien capturer.
+    Une panne de capture ne casse jamais la réponse au juriste : elle est journalisée."""
+    try:
+        from ops.enrichissement import capturer
+
+        capturer(texte, request_id=reponse.request_id, version=reponse.version,
+                 score=reponse.confiance_globale, clauses=[c.type for c in reponse.clauses])
+    except Exception as exc:  # noqa: BLE001 — la capture est accessoire, la réponse ne l'est pas
+        telemetry.logger.warning("capture.echec", request_id=reponse.request_id, cause=str(exc))
+
+
 @router.post("/analyse", response_model=ReponseAnalyseV2)
 def analyse(
     requete: RequeteAnalyseV2,
@@ -206,5 +219,6 @@ def analyse(
             content={"detail": f"fournisseur LLM indisponible : {exc}", "request_id": rid},
             headers={"X-Mardik-Version": client.bundle.version},
         )
+    capturer_si_peu_sur(requete.texte, reponse, telemetry)
     response.headers["X-Mardik-Version"] = reponse.version
     return reponse

@@ -32,7 +32,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.api_v1 import analyser_v1
-from app.api_v2 import analyser_v2, nouveau_request_id
+from app.api_v2 import analyser_v2, capturer_si_peu_sur, nouveau_request_id
 from app.llm_client import ErreurLLM, LLMClient
 from app.telemetry import Telemetry, build_default_telemetry
 from ops.registry import Registry
@@ -109,6 +109,7 @@ def analyse(
     try:
         if bundle.strategie == "map_reduce_clauses":
             reponse = analyser_v2(requete.texte, client, telemetry, request_id=rid)
+            capturer_si_peu_sur(requete.texte, reponse, telemetry)  # brique 17 (Ch2)
         else:
             reponse = analyser_v1(requete.texte, client, telemetry)
     except ErreurLLM as exc:
