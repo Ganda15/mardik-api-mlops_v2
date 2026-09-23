@@ -16,3 +16,9 @@ services:
     command: python -m ops.watcher --boucle --intervalle 10
     environment:
       MARDIK_SEUILS: /app/eval/thresholds.demo.yml
+
+  # L'instance du lien public (profil « public ») aussi : sinon la capture (0,6 en démo) et les seuils
+  # diffèrent entre ce que la page publique fait et ce que /pilotage montre.
+  public:
+    environment:
+      MARDIK_SEUILS: /app/eval/thresholds.demo.yml

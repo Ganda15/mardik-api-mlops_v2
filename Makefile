@@ -1,4 +1,4 @@
-.PHONY: install up down serve proxy dashboard test test-integration test-acceptance eval traffic ci fixtures lint fmt clean
+.PHONY: install up down demo demo-public demo-down serve proxy dashboard test test-integration test-acceptance eval traffic ci fixtures lint fmt clean
 
 MODE ?= normal
 VERSION ?= v2
@@ -14,6 +14,21 @@ up:                 ## app + proxy de dérive + tableau de bord (docker compose)
 
 down:
 	docker compose down
+
+# Démo Chantier 2 : les DEUX fichiers, toujours. Un `docker compose … up -d` sans l'overlay recrée
+# app/watcher/public avec les seuils réels (30 requêtes, 1 jour) et un watcher à 60 s — arrivé le 23/09.
+DEMO = docker compose -f docker-compose.yml -f docker-compose.demo.yml
+
+demo:               ## app + proxy + dashboard + watcher, seuils de démo (eval/thresholds.demo.yml), watcher 10 s
+	$(DEMO) up -d --build
+	@echo "pilotage : http://localhost:8000/pilotage — seuils : eval/thresholds.demo.yml — watcher toutes les 10 s"
+
+demo-public:        ## la même chose + l'instance verrouillée + le tunnel (lien : docker compose logs tunnel)
+	$(DEMO) --profile public up -d --build
+	@$(DEMO) logs tunnel 2>/dev/null | grep -o 'https://[a-z-]*\.trycloudflare\.com' | tail -n 1 || true
+
+demo-down:          ## arrête tout, lien compris
+	$(DEMO) --profile public down
 
 serve:              ## app en local, sans docker (le proxy doit tourner : make proxy)
 	uv run uvicorn app.main:app --reload --port 8000
