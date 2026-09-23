@@ -99,6 +99,7 @@ jobs:
               - 'prompts/**'
               - 'app/pipeline/**'
               - 'eval/attendus.jsonl'
+              - 'eval/attendus_production.jsonl'   # brique 17 : un cas de production ajouté relance le gate
               - 'eval/thresholds.yml'
 
   gate-evaluation:
@@ -121,6 +122,8 @@ jobs:
       - name: Gate d'évaluation (MOCK=on en CI — mécanique du gate, pas les vrais chiffres)
         id: gate
         run: uv run python -m eval.run_eval --version v2   # seuils : eval/thresholds.yml (Ch2, brique 13)
+      - name: Rejeu des cas de production (brique 17, test 8 du brief) — bloque si un cas échoue
+        run: uv run python -m eval.rejouer_production --version v2
       - name: Prochaine version (MINOR si le filtre de chemin a matché, sinon PATCH)
         id: version
         run: |
