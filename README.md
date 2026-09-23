@@ -152,7 +152,7 @@ tests/      acceptance/ (les 10 du brief) · integration/ · un fichier par briq
 - Le **score de confiance** est l'auto-évaluation du modèle, pénalisée si l'extrait n'est pas dans le texte — il
   n'est **pas calibré** statistiquement.
 - Le **coût** est calculé aux tarifs catalogue du modèle (entrée / sortie) ; la facture Azure réelle reste à rapprocher.
-- La **latence** dépend de la file du fournisseur : sur neuf passages du gate réel sur GitHub, un a dépassé 8 s (12,5 s) — le gate l'a bloqué.
+- La **latence** dépend de la file du fournisseur : un passage du gate réel sur GitHub a dépassé 8 s (12,5 s) — le gate l'a bloqué.
 - **Pas de plafond de taille** sur `/v2` : un document démesuré est découpé en centaines d'appels, le fournisseur les
   limite (`429`) et l'API répond `503` explicitement — mais après avoir payé la première vague. Le refus en amont
   (`413` au-delà d'un plafond), prévu à la conception, n'est pas construit.
