@@ -69,7 +69,11 @@ class Bundle:
     parametres: dict[str, Any]
     schema_sortie: dict[str, Any] | None
     strategie: str
-    cout_par_1k_tokens: float = 0.0
+    cout_par_1k_tokens: float = 0.0          # tarif unique (v1) — gardé pour le bundle fourni
+    # Brique 23 (23/09) : la sortie coûte 6× l'entrée sur gpt-5.4 (0,0025 vs 0,015 $/1k, catalogue) —
+    # un tarif unique sous-estimait le coût réel d'un facteur 1,6 à 2,3. Deux tarifs, séparés.
+    cout_par_1k_entree: float = 0.0
+    cout_par_1k_sortie: float = 0.0
     chemin: Path | None = None
 
     @classmethod
@@ -97,6 +101,8 @@ class Bundle:
             schema_sortie=data.get("schema_sortie"),
             strategie=str(data.get("strategie", "monolithique")),
             cout_par_1k_tokens=float(data.get("cout_par_1k_tokens", 0.0)),
+            cout_par_1k_entree=float(data.get("cout_par_1k_entree", 0.0)),
+            cout_par_1k_sortie=float(data.get("cout_par_1k_sortie", 0.0)),
             chemin=chemin,
         )
 
@@ -218,7 +224,10 @@ class LLMClient:
         return reponse
 
     def cout_eur(self, reponse: ReponseLLM) -> float:
-        return round(reponse.tokens / 1000 * self.bundle.cout_par_1k_tokens, 6)
+        b = self.bundle
+        if b.cout_par_1k_entree or b.cout_par_1k_sortie:
+            return round((reponse.tokens_entree * b.cout_par_1k_entree + reponse.tokens_sortie * b.cout_par_1k_sortie) / 1000, 6)
+        return round(reponse.tokens / 1000 * b.cout_par_1k_tokens, 6)
 
     # --------------------------------------------------------------- providers
     def _client(self) -> httpx.Client:
