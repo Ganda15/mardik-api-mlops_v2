@@ -36,6 +36,12 @@ parametres:
                                    # vague, c07/c10/c12 = 4,8 à 5,9 s. Trafic client ~20 req/jour
                                    # (spec §4) : pas de risque de quota à ce volume. Sans effet sur un
                                    # Ollama local (OLLAMA_NUM_PARALLEL=1 sérialise, mesuré le 21/09).
+  timeout_s: 20                   # brique 19 (23/09) : délai PAR appel de section. Avant : 60 s (env), sans
+                                   # reprise — un appel pendu traînait toute l'analyse. Sections mesurées à 2-6 s.
+  reprises: 1                     # une reprise sur délai dépassé / injoignable / 5xx / 429 — jamais sur un 4xx
+  regroupement_caracteres: 4000   # sections voisines regroupées jusqu'à 4 000 caractères par appel : c01 passe
+                                   # de 18 appels à ~3. On attend le plus lent des appels : moins d'appels, queue
+                                   # plus courte. 0 = découpage de la brique 2 tel quel. Mesuré au gate réel (23/09).
   seuils_libelle:                 # niveau de certitude affiché au juriste (conception Ch1, H6) :
     haute: 0.8                    #   score global >= 0.8 → « haute » → valider
     moyenne: 0.5                  #   >= 0.5 → « moyenne » → vérifier les clauses sous 0.7 ; sinon « basse »

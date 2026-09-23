@@ -1,0 +1,26 @@
+meta {
+  name: 10 · lien public — avec le code → 200
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{publicUrl}}/v2/analyse
+  body: json
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+body:json {
+  {
+    "texte": "Article 1 — Durée\nLe présent contrat est conclu pour une durée de 12 mois et se poursuit ensuite."
+  }
+}
+
+docs {
+  La même requête avec le code de `public.env` (onglet Secrets de l'environnement, jamais dans un
+  fichier). Vrai appel au modèle, vrai coût : il compte dans le plafond des 24 h.
+}

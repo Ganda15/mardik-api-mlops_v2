@@ -101,3 +101,45 @@ def test_phrase_plus_longue_que_taille_max_utilise_le_repli_documente():
     assert "".join(s.texte for s in sections) == texte
     for s in sections:
         assert len(s.texte) <= 90, f"section {s.indice} dépasse taille_max malgré le repli"
+
+
+# --- brique 19 (23/09) : regrouper les sections voisines, moins d'appels, la même garantie ---------------
+
+
+def test_regrouper_zero_ne_change_rien():
+    from app.pipeline.decoupage import Section, regrouper
+
+    sections = [Section(0, "a", "x" * 10), Section(1, "b", "y" * 10)]
+    assert regrouper(sections, 0) == sections
+
+
+def test_regrouper_fusionne_les_voisines_sans_perdre_un_caractere():
+    from app.pipeline.decoupage import Section, regrouper
+
+    sections = [Section(i, f"Art {i}", f"Texte {i} " * 20) for i in range(5)]     # ~180 caractères chacune
+    groupes = regrouper(sections, 400)
+    assert [g.indice for g in groupes] == list(range(len(groupes)))
+    assert 1 < len(groupes) < 5
+    assert "".join(g.texte for g in groupes) == "".join(s.texte for s in sections)  # rien n'est perdu
+    assert all(len(g.texte) <= 400 for g in groupes)
+    assert groupes[0].titre == "Art 0 / Art 1"
+
+
+def test_une_section_plus_grande_que_le_budget_reste_seule():
+    from app.pipeline.decoupage import Section, regrouper
+
+    grosse = Section(0, "grosse", "z" * 1000)
+    petites = [Section(1, "p1", "a" * 50), Section(2, "p2", "b" * 50)]
+    groupes = regrouper([grosse, *petites], 300)
+    assert groupes[0].texte == "z" * 1000 and len(groupes) == 2
+
+
+def test_le_v2_regroupe_les_sections_de_c01_en_moins_d_appels(contrat):
+    """c01 : 18 articles courts (215 à 980 caractères, mesuré le 21/09) → 18 appels ; regroupés, ~3."""
+    from app.llm_client import Bundle
+    from app.pipeline.decoupage import decouper, regrouper
+
+    p = Bundle.charger("v2").parametres
+    sections = decouper(contrat("c01"), taille_max=int(p["contexte_max_caracteres"]))
+    groupes = regrouper(sections, int(p["regroupement_caracteres"]))
+    assert len(sections) >= 15 and 1 < len(groupes) <= 5

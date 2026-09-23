@@ -1,0 +1,17 @@
+meta {
+  name: 07 · pilotage — le journal, du plus récent au plus ancien
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/pilotage/journal?limite=20
+  body: none
+  auth: none
+}
+
+docs {
+  Test d'acceptance 10 : tout ajustement — seuil, promotion, refus de promotion, rollback,
+  enrichissement — avec le signal qui l'a déclenché, la valeur, le seuil, l'acteur (« watcher », ou le nom
+  d'une personne). Append-only : on n'y réécrit jamais une ligne.
+}

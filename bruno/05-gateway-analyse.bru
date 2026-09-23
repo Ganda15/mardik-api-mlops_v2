@@ -1,0 +1,23 @@
+meta {
+  name: 05 · gateway — /analyse, routée par le canary
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/analyse
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "texte": "CONTRAT DE PRESTATIONS\n\nArticle 1 — Durée\nLe présent contrat est conclu pour une durée de 12 mois.\n\nArticle 2 — Prix et paiement\nLe prix est de 10 000 euros hors taxes, payable à 30 jours.\n\nArticle 3 — Résiliation\nChaque partie peut résilier moyennant un préavis de deux mois."
+  }
+}
+
+docs {
+  Le client v1 (scripts/client_v1.py) appelle cette route sans rien changer pendant le canary — test
+  d'acceptance 3. Regarder l'en-tête `X-Mardik-Version` de la réponse : v1.0.0 ou la version canary, tirée
+  au sort selon `canary_percent`. Renvoyer plusieurs fois pour voir la répartition.
+}

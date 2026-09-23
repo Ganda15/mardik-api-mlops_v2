@@ -45,6 +45,9 @@ Ligne de commande : ``python -m ops.deploy publier v2.0.0 | canary v2.0.0 --pour
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import argparse
 import os
 import subprocess
@@ -54,7 +57,7 @@ from typing import Any
 
 from app.llm_client import Bundle
 from app.telemetry import MetricsStore
-from eval.run_eval import evaluer
+from eval.run_eval import Rapport, evaluer
 from ops.registry import Registry
 
 
@@ -91,7 +94,8 @@ def publier(
 
     bundle_charge = Bundle.charger(bundle)
     commit_final = commit or _commit_courant()
-    manifest = reg.etiqueter(version, bundle_charge, commit=commit_final, note_eval=rapport.note)
+    manifest = reg.etiqueter(version, bundle_charge, commit=commit_final, note_eval=rapport.note,
+                             signature=getattr(rapport, "signature", None))
     reg.journaliser("publication", version=version, commit=commit_final, note_eval=rapport.note)
     return manifest
 
@@ -215,6 +219,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("version")
     p.add_argument("--bundle", default="v2")
     p.add_argument("--seuil", type=float, default=None)
+    p.add_argument("--rapport", default=None,
+                   help="publier depuis un rapport de gate sauvegardé (JSON, une ligne de eval/history.jsonl) — sans ré-évaluer")
     c = sub.add_parser("canary")
     c.add_argument("version")
     c.add_argument("--pourcentage", type=int, default=None)
@@ -231,7 +237,10 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.commande == "publier":
-            print(publier(args.version, bundle=args.bundle, seuil=args.seuil))
+            rapport = None
+            if args.rapport:
+                rapport = Rapport(**json.loads(Path(args.rapport).read_text(encoding="utf-8")))
+            print(publier(args.version, bundle=args.bundle, seuil=args.seuil, rapport=rapport))
         elif args.commande == "canary":
             print(deployer_canary(args.version, args.pourcentage))
         elif args.commande == "promouvoir":

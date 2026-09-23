@@ -1,0 +1,29 @@
+meta {
+  name: 08 · pilotage — ROLLBACK (agit sur la production)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/pilotage/rollback
+  body: json
+  auth: none
+}
+
+headers {
+  X-Admin-Token: {{adminToken}}
+}
+
+body:json {
+  {
+    "acteur": "Era",
+    "commentaire": "démo : médiane sous le seuil"
+  }
+}
+
+docs {
+  Test d'acceptance 6, la moitié humaine : le watcher a alerté, une PERSONNE décide. Refus explicites :
+  403 sans jeton configuré, 401 mauvais jeton, 422 sans `acteur` (un retour arrière n'est jamais anonyme),
+  409 s'il n'y a rien à annuler. 201 : la ligne de journal créée, reliée à l'alerte en cours. L'autre
+  chemin, par la chaîne : .github/workflows/rollback.yml (déclenchement manuel, acteur obligatoire).
+}

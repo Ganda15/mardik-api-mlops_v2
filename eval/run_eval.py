@@ -38,7 +38,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import statistics
 import sys
 import time
 from dataclasses import asdict, dataclass, field
@@ -72,6 +74,9 @@ class Rapport:
     motifs: list[str] = field(default_factory=list)
     seuil: float = 0.75
     precision: float = 0.0
+    # Brique 20 : la signature de la version saine (médiane du score global, part < 0,5, nombre d'analyses),
+    # calculée SEULEMENT avec le vrai modèle — None en MOCK. Portée par le manifeste (ops/deploy.publier).
+    signature: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -113,8 +118,8 @@ def _p95(valeurs: list[float]) -> float:
 
 def _analyser_une_fois(
     bundle: Bundle, client: LLMClient, telemetry: Telemetry, texte: str
-) -> tuple[set[str], float, float]:
-    """Une passe d'analyse : renvoie (types de clauses trouvés, latence_ms, cout_eur).
+) -> tuple[set[str], float, float, float | None]:
+    """Une passe d'analyse : renvoie (types de clauses trouvés, latence_ms, cout_eur, score global ou None).
 
     v2 expose latence_ms et cout_eur directement dans sa réponse. v1 ne les expose pas
     (ReponseAnalyseV1 n'a que clauses/modele/version/tronque) — on les relit dans la
@@ -124,14 +129,14 @@ def _analyser_une_fois(
     """
     if bundle.strategie == "map_reduce_clauses":
         reponse = analyser_v2(texte, client, telemetry)
-        return {c.type for c in reponse.clauses}, reponse.latence_ms, reponse.cout_eur
+        return {c.type for c in reponse.clauses}, reponse.latence_ms, reponse.cout_eur, reponse.confiance_globale
 
     debut = time.perf_counter()
     reponse = analyser_v1(texte, client, telemetry)
     latence_ms = (time.perf_counter() - debut) * 1000
     mesures = telemetry.metriques.lire()
     cout_eur = mesures[-1].cout_eur if mesures else 0.0
-    return set(reponse.clauses), latence_ms, cout_eur
+    return set(reponse.clauses), latence_ms, cout_eur, None   # la v1 n'a pas de score
 
 
 def evaluer(
@@ -157,7 +162,7 @@ def evaluer(
     bundle = charger_bundle(version, registry)
     client = LLMClient(bundle)
     tel = telemetry or build_telemetry(
-        span_exporter=NoopSpanExporter(), metrics_path=RACINE / "eval" / ".metrics_eval.jsonl"
+        span_exporter=NoopSpanExporter(), metrics_path=Path(os.environ.get("EVAL_METRICS_PATH") or RACINE / "eval" / ".metrics_eval.jsonl")
     )
     essais = n_essais or int(bundle.parametres.get("essais_eval", 1))
 
@@ -169,6 +174,7 @@ def evaluer(
     tous_couts: list[float] = []
     notes: list[float] = []
     precisions: list[float] = []
+    scores: list[float] = []
 
     for contrat_id in ids:
         item = tous_attendus[contrat_id]
@@ -180,7 +186,9 @@ def evaluer(
         dernieres_trouvees: set[str] = set()
         dernier_en_trop: list[str] = []
         for _ in range(essais):
-            trouvees, latence_ms, cout_eur = _analyser_une_fois(bundle, client, tel, texte)
+            trouvees, latence_ms, cout_eur, score = _analyser_une_fois(bundle, client, tel, texte)
+            if score is not None:
+                scores.append(float(score))
             toutes_latences.append(latence_ms)
             tous_couts.append(cout_eur)
             rappel, precision, en_trop = noter(trouvees, attendues)
@@ -210,6 +218,13 @@ def evaluer(
     precision_globale = sum(precisions) / len(precisions) if precisions else 0.0
     latence_p95 = _p95(toutes_latences)
     cout_moyen = sum(tous_couts) / len(tous_couts) if tous_couts else 0.0
+    signature = None
+    if scores and client.mock != "on":
+        signature = {
+            "score_median": round(statistics.median(scores), 4),
+            "part_score_bas": round(sum(1 for x in scores if x < 0.5) / len(scores), 4),
+            "analyses": len(scores),
+        }
 
     motifs: list[str] = []
     if note_globale < seuil:
@@ -234,6 +249,7 @@ def evaluer(
         motifs=motifs,
         seuil=seuil,
         precision=precision_globale,
+        signature=signature,
     )
 
     if historique is not None:

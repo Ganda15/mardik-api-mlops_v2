@@ -1,0 +1,23 @@
+meta {
+  name: 09 · lien public — sans code → 401
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{publicUrl}}/v2/analyse
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "texte": "Article 1 — Durée\nLe présent contrat est conclu pour une durée de 12 mois et se poursuit ensuite."
+  }
+}
+
+docs {
+  Brique F3 : un lien public qui appelle Azure est un budget que n'importe qui peut dépenser. Sans
+  `X-API-Key` : 401, avant tout appel au modèle (donc gratuit). La page GET reste ouverte ; seuls les POST
+  sont verrouillés. Plafond de coût sur 24 h : 429 au-delà.
+}

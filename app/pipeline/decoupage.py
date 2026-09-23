@@ -88,3 +88,36 @@ def _frontiere_de_phrase(texte: str, taille_max: int) -> int:
         if candidats:
             return candidats[-1].end()
     return taille_max
+
+
+def regrouper(sections: list[Section], budget: int) -> list[Section]:
+    """Brique 19 (23/09) : fusionne des sections VOISINES tant que le groupe tient dans ``budget`` caractères.
+
+    Pourquoi : chaque section est un appel au modèle, et une analyse attend le plus lent (map-reduce).
+    Avec 19 à 31 appels par contrat, la latence vue par le client est le maximum de 19 à 31 tirages —
+    c'est la queue de la distribution du fournisseur qu'on paie à chaque fois. Moins d'appels = moins
+    de tirages. ``budget <= 0`` : aucun regroupement (comportement de la brique 2, inchangé).
+    Même garantie que ``decouper`` : la concaténation des textes redonne le texte d'origine.
+    Une section déjà plus grande que le budget reste seule.
+    """
+    if budget <= 0 or not sections:
+        return list(sections)
+    groupes: list[Section] = []
+    titres: list[str] = []
+    textes: list[str] = []
+
+    def _fermer() -> None:
+        if textes:
+            groupes.append(Section(indice=len(groupes), titre=" / ".join(titres), texte="".join(textes)))
+            titres.clear()
+            textes.clear()
+
+    for s in sections:
+        if textes and sum(len(t) for t in textes) + len(s.texte) > budget:
+            _fermer()
+        titres.append(s.titre)
+        textes.append(s.texte)
+        if len(s.texte) > budget:
+            _fermer()
+    _fermer()
+    return groupes

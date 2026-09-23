@@ -1,0 +1,23 @@
+meta {
+  name: 01 · v1 — le contrat historique, intact
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/analyse
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "texte": "CONTRAT DE PRESTATIONS\n\nArticle 1 — Durée\nLe présent contrat est conclu pour une durée de 12 mois.\n\nArticle 2 — Prix et paiement\nLe prix est de 10 000 euros hors taxes, payable à 30 jours.\n\nArticle 3 — Résiliation\nChaque partie peut résilier moyennant un préavis de deux mois."
+  }
+}
+
+docs {
+  Exigence 2 du CTO : « la v1 ne casse jamais ». La réponse n'a que quatre champs — clauses, modele,
+  version, tronque — et n'en gagne aucun, même additif (tests/test_api_v2_champs_frontend.py). Sur un
+  contrat au-delà de son plafond, `tronque` passe à true : c'est le défaut que la v2 corrige.
+}

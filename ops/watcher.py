@@ -109,6 +109,12 @@ def tick(
     mesures = met.lire()
     active = reg.active()
     canary, pct = reg.canary()
+    # Brique 20 : la référence de la dérive est la signature CALCULÉE par le gate réel et portée par le
+    # manifeste de la version active ; absente (CI en MOCK, ou v1), eval/thresholds.yml fait foi.
+    if active:
+        portee = (reg.manifest(active) or {}).get("signature")
+        if portee:
+            seuils = {**seuils, "signature": {**seuils["signature"], **portee, "source": f"manifeste {active}"}}
     par_version = signaux_par_version(mesures, seuils, maintenant)
     resultat: dict[str, Any] = {"alertes": [], "decision": None}
 
