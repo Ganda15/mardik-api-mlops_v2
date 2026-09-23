@@ -31,6 +31,7 @@ class ClientLent:
 
     def __init__(self, parallelisme: int | None = None) -> None:
         self.bundle = Bundle.charger("v2")
+        self.bundle.parametres["regroupement_caracteres"] = 0   # brique 19 : ici on mesure N appels, pas le regroupement
         if parallelisme is not None:
             self.bundle.parametres["parallelisme"] = parallelisme
         self.simultanes = 0

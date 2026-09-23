@@ -1,0 +1,23 @@
+meta {
+  name: 03 · v2 — requête invalide → 422 explicite
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/v2/analyse
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "texte": ""
+  }
+}
+
+docs {
+  Test d'acceptance 2 : une requête invalide reçoit un code et un message, jamais un plantage. 422 ici
+  (texte vide) ; 413 au-delà du plafond de taille ; 503 si le fournisseur est injoignable (avec le
+  `request_id` pour retrouver la trace). Aucun appel au modèle : une erreur ne coûte rien.
+}

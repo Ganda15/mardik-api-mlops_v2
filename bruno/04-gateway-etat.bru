@@ -1,0 +1,17 @@
+meta {
+  name: 04 · gateway — qui sert quel trafic
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/gateway/etat
+  body: none
+  auth: none
+}
+
+docs {
+  Test d'acceptance 4, seconde moitié : « on peut identifier quelle version sert quel trafic ».
+  `active`, `canary`, `canary_percent` — et `source` : le pourcentage EFFECTIF (registre, ou variable
+  CANARY_PERCENT si elle est posée — corrigé le 22/09 quand les deux disaient des choses différentes).
+}

@@ -18,6 +18,7 @@ le prompt d'une équipe diffère de celui qui a servi à l'enregistrement.
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import os
@@ -181,7 +182,10 @@ class LLMClient:
         self.bundle = bundle
         self.provider = (provider or _env("LLM_PROVIDER", "ollama")).lower()
         self.proxy_url = (proxy_url or _env("LLM_PROXY_URL", "http://localhost:8080")).rstrip("/")
-        self.timeout_s = timeout_s or float(_env("LLM_TIMEOUT_S", "60"))
+        # Brique 19 (23/09) : le délai et les reprises viennent du bundle (versionnés), sinon de l'env.
+        self.timeout_s = timeout_s or float(bundle.parametres.get("timeout_s") or _env("LLM_TIMEOUT_S", "60"))
+        self.reprises = int(bundle.parametres.get("reprises", _env("LLM_REPRISES", "0") or 0))
+        self._http: httpx.Client | None = None
         self.mock = (mock or mode_mock()).lower()
         self.fixtures = fixtures
 
@@ -217,7 +221,42 @@ class LLMClient:
         return round(reponse.tokens / 1000 * self.bundle.cout_par_1k_tokens, 6)
 
     # --------------------------------------------------------------- providers
+    def _client(self) -> httpx.Client:
+        """UN client HTTP pour toute la vie de LLMClient : le pool de connexions est réutilisé par les
+        appels de section parallèles (brique 12) au lieu d'une poignée de main TLS par section (mesuré le
+        23/09 : 19 à 31 par contrat). ``httpx.Client`` est sûr entre threads."""
+        if self._http is None:
+            self._http = httpx.Client(timeout=self.timeout_s)
+        return self._http
+
+    def _session(self):
+        return contextlib.nullcontext(self._client())
+
     def _appeler(
+        self, prompt_systeme: str, prompt_utilisateur: str, json_mode: bool
+    ) -> tuple[str, dict[str, Any]]:
+        """Une tentative, plus ``reprises`` sur ce qui peut se réparer en réessayant : délai dépassé,
+        fournisseur injoignable, HTTP 5xx ou 429. Jamais sur un 4xx (le corps est en cause) ni sur une
+        réponse mal formée. La dernière erreur reste explicite (brique 6 : jamais un plantage muet)."""
+        derniere: Exception | None = None
+        for tentative in range(self.reprises + 1):
+            try:
+                return self._une_tentative(prompt_systeme, prompt_utilisateur, json_mode)
+            except httpx.HTTPStatusError as exc:
+                code = exc.response.status_code
+                derniere = ErreurLLM(f"fournisseur {self.provider} : HTTP {code}")
+                if code < 500 and code != 429:
+                    raise derniere from exc
+            except httpx.HTTPError as exc:
+                derniere = ErreurLLM(f"fournisseur {self.provider} injoignable : {exc}")
+            except (KeyError, IndexError, ValueError) as exc:
+                raise ErreurLLM(f"réponse inattendue du fournisseur : {exc}") from exc
+            if tentative < self.reprises:
+                continue
+        assert derniere is not None
+        raise derniere
+
+    def _une_tentative(
         self, prompt_systeme: str, prompt_utilisateur: str, json_mode: bool
     ) -> tuple[str, dict[str, Any]]:
         params = self.bundle.parametres
@@ -225,8 +264,7 @@ class LLMClient:
             {"role": "system", "content": prompt_systeme},
             {"role": "user", "content": prompt_utilisateur},
         ]
-        try:
-            with httpx.Client(timeout=self.timeout_s) as http:
+        with self._session() as http:
                 if self.provider == "azure":
                     body: dict[str, Any] = {
                         "model": self.bundle.modele,
@@ -281,14 +319,6 @@ class LLMClient:
                     "completion_tokens": data.get("eval_count", 0),
                 }
                 return texte, usage
-        except httpx.HTTPStatusError as exc:
-            raise ErreurLLM(
-                f"fournisseur {self.provider} : HTTP {exc.response.status_code}"
-            ) from exc
-        except httpx.HTTPError as exc:
-            raise ErreurLLM(f"fournisseur {self.provider} injoignable : {exc}") from exc
-        except (KeyError, IndexError, ValueError) as exc:
-            raise ErreurLLM(f"réponse inattendue du fournisseur : {exc}") from exc
 
     # ---------------------------------------------------------------- fixtures
     def _cle_fixture(self, prompt_systeme: str, prompt_utilisateur: str) -> str:

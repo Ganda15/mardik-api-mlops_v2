@@ -200,8 +200,25 @@ jobs:
         with:
           python-version: "3.11"
       - run: uv sync
+      # Brique 21 : gate RÉEL exigé ? (variable de dépôt MARDIK_EXIGER_EVAL_OK=1, posée par Era une fois les
+      # secrets Azure en place). Sans le tag eval-ok/<sha> posé par gate-reel.yml : publication REFUSÉE.
+      # Avec : le manifeste est publié depuis le rapport du vrai gate (vrai modèle, vraie signature).
+      - name: Gate réel exigé — tag eval-ok/<sha> et rapport de gate-reel.yml
+        id: eval-ok
+        if: vars.MARDIK_EXIGER_EVAL_OK == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git tag -l "eval-ok/$GITHUB_SHA")" ]; then
+            echo "::error::aucun tag eval-ok/$GITHUB_SHA — le gate réel (gate-reel.yml) n a pas validé ce commit : publication refusée"
+            exit 1
+          fi
+          RUN=$(gh run list --workflow gate-reel.yml --json databaseId,headSha,conclusion \
+                --jq ".[] | select(.headSha == \"$GITHUB_SHA\" and .conclusion == \"success\") | .databaseId" | head -n 1)
+          gh run download "$RUN" -n "gate-reel-$GITHUB_SHA" -D gate-reel
+          echo "rapport=--rapport gate-reel/rapport.json" >> "$GITHUB_OUTPUT"
       - name: Étiqueter la version dans le registre — REFUSE si le gate a échoué
-        run: uv run python -m ops.deploy publier "$VERSION" --bundle v2
+        run: uv run python -m ops.deploy publier "$VERSION" --bundle v2 ${{ steps.eval-ok.outputs.rapport }}
       - name: Tag git — immuable (git refuse d'écraser un tag existant sans -f)
         run: |
           git config user.name "llmops[bot]"

@@ -56,6 +56,7 @@ class Registry:
         commit: str,
         note_eval: float | None,
         details: dict[str, Any] | None = None,
+        signature: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Dépose le bundle sous ``<root>/<version>/`` avec son manifeste.
 
@@ -82,6 +83,9 @@ class Registry:
             "strategie": bundle.strategie,
             "note_eval": note_eval,
             "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            # Brique 20 : la signature de la version saine (médiane du score, part < 0,5) calculée par le gate
+            # sur le VRAI modèle ; None en CI (MOCK) — le watcher retombe alors sur eval/thresholds.yml.
+            "signature": signature,
             **(details or {}),
         }
         (dossier / "manifest.json").write_text(

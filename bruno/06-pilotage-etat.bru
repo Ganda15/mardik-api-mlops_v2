@@ -1,0 +1,18 @@
+meta {
+  name: 06 · pilotage — signaux par version, alertes
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/pilotage/etat
+  body: none
+  auth: none
+}
+
+docs {
+  Chantier 2, briques 14 et 16. Par version : requêtes, `etat` (« donnees_insuffisantes » sous 30
+  requêtes — 5 en démo, par configuration), P95, coût moyen, taux d'erreur, part des scores < 0,5, médiane
+  du score, part de trafic. `alertes` : ce que le watcher a vu franchir un seuil — il alerte, il ne recule
+  jamais seul (arbitrage du CTO).
+}

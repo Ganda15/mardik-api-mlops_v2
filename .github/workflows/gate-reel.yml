@@ -1,0 +1,91 @@
+# Gate RÉEL — brique 21 (23/09). Idée de David en réunion, reprise par Era.
+#
+# llmops.yml tourne en MOCK (gratuit) : il prouve la MÉCANIQUE du gate, pas les chiffres du vrai modèle —
+# son manifeste dit `modele-ci`. Ce workflow, déclenché À LA MAIN, joue le gate sur Azure pour un commit
+# précis, puis :
+#   1. publie son rapport (dernière ligne de eval/history.jsonl, avec la signature de la version saine —
+#      brique 20) en artefact `gate-reel-<sha>` ;
+#   2. pose le tag `eval-ok/<sha>` — la preuve, immuable, que CE commit a passé le vrai gate.
+# llmops.yml, job publication : si la variable de dépôt MARDIK_EXIGER_EVAL_OK vaut "1", il REFUSE de
+# publier un commit sans ce tag, et publie depuis ce rapport (--rapport) : le manifeste porte alors le
+# vrai modèle et la vraie signature. Variable absente : comportement inchangé (MOCK), pour ne pas
+# bloquer main avant que les secrets existent.
+#
+# Secrets à poser par Era (Settings → Secrets and variables → Actions) — jamais dans le dépôt :
+#   AZURE_AI_ENDPOINT   la surface openai/v1 de la ressource (même valeur que dans .env)
+#   AZURE_AI_API_KEY    la clé
+# Variables (facultatives) : LLM_MODEL (défaut gpt-5.4), AZURE_AI_API_VERSION.
+# Coût : ~0,25 à 0,40 € par passe (mesuré les 22 et 23/09) — d'où `essais` = 1 par défaut.
+
+name: gate-reel
+
+on:
+  workflow_dispatch:
+    inputs:
+      essais:
+        description: "passes du gate (1 = ~0,25 EUR ; le bundle en prévoit 3)"
+        required: true
+        default: "1"
+
+permissions:
+  contents: write   # le tag eval-ok/<sha>
+
+env:
+  MOCK: "off"
+  DRIFT: "off"
+  LLM_PROVIDER: azure
+  LLM_MODEL: ${{ vars.LLM_MODEL || 'gpt-5.4' }}
+  # Pas de proxy de dérive sur le runner : le client parle directement à la surface openai/v1.
+  LLM_PROXY_URL: ${{ secrets.AZURE_AI_ENDPOINT }}
+  AZURE_AI_ENDPOINT: ${{ secrets.AZURE_AI_ENDPOINT }}
+  AZURE_AI_API_KEY: ${{ secrets.AZURE_AI_API_KEY }}
+  AZURE_AI_API_VERSION: ${{ vars.AZURE_AI_API_VERSION }}
+
+concurrency:
+  group: gate-reel-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  gate-reel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: "3.11"
+      - run: uv sync
+      - name: Secrets présents ? (échec fermé — jamais un gate « réel » qui tournerait sans modèle)
+        run: |
+          if [ -z "$AZURE_AI_API_KEY" ] || [ -z "$LLM_PROXY_URL" ]; then
+            echo "::error::secrets AZURE_AI_ENDPOINT / AZURE_AI_API_KEY absents — voir l'en-tête de gate-reel.yml"
+            exit 1
+          fi
+      - name: Gate réel sur Azure (essais=${{ inputs.essais }})
+        run: uv run python -m eval.run_eval --version v2 --essais "${{ inputs.essais }}"
+      - name: Rapport du gate (avec la signature de la version saine, brique 20)
+        run: |
+          mkdir -p gate-reel
+          tail -n 1 eval/history.jsonl > gate-reel/rapport.json
+          cat gate-reel/rapport.json
+      - name: Le gate a-t-il PASSÉ ? (le rapport fait foi, pas le code de sortie)
+        run: |
+          uv run python - <<'PY'
+          import json, sys
+          r = json.load(open("gate-reel/rapport.json", encoding="utf-8"))
+          print("PASSE" if r['passe'] else "ECHEC - " + " ; ".join(r["motifs"]))
+          sys.exit(0 if r['passe'] else 1)
+          PY
+      - name: Rapport en artefact — lu par llmops.yml (publication) quand MARDIK_EXIGER_EVAL_OK=1
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gate-reel-${{ github.sha }}
+          path: gate-reel/rapport.json
+      - name: Tag eval-ok/<sha> — immuable, la preuve que ce commit a passé le vrai gate
+        run: |
+          git config user.name "gate-reel[bot]"
+          git config user.email "llmops@users.noreply.github.com"
+          git tag -a "eval-ok/$GITHUB_SHA" -m "gate réel PASSE sur Azure (essais=${{ inputs.essais }})"
+          git push origin "refs/tags/eval-ok/$GITHUB_SHA"

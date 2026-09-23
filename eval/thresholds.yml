@@ -44,4 +44,6 @@ signature:                     # la version en bonne santé : la référence de 
     8 analyses réelles v2 (Azure gpt-5.4, parallelisme 32) du 22/09 09:35 UTC au 23/09, fenêtre de la preuve de dérive
     (22/09 10:30–11:00 UTC) exclue ; mesuré dans ops/metrics.jsonl. CORRIGÉ le 23/09 : la première valeur (5,9 %, « 17
     analyses ») mêlait Ollama local du 21/09 et les runs à parallelisme 4 — trouvé en mesurant le détecteur (brique 18b).
-    PROVISOIRE : à remplacer par la signature calculée par le gate et portée par le manifeste (reste à faire).
+    Depuis la brique 20 (23/09) : la signature est CALCULÉE par le gate réel (médiane 0,9915, part < 0,5 : 0,0 sur
+    12 analyses) et PORTÉE par le manifeste de la version active — le watcher la lit là d'abord ; ce bloc est le
+    REPLI quand le manifeste n'en porte pas (CI en MOCK, v1).

@@ -44,7 +44,7 @@ from pydantic import BaseModel, Field
 from app.llm_client import Bundle, ErreurLLM, LLMClient
 from app.pipeline.confiance import Clause, libeller, scorer
 from app.pipeline.consolidation import consolider
-from app.pipeline.decoupage import Section, decouper
+from app.pipeline.decoupage import Section, decouper, regrouper
 from app.pipeline.extraction import extraire
 from app.telemetry import Mesure, Telemetry, build_default_telemetry
 
@@ -106,6 +106,9 @@ def analyser_v2(
         span.set_attribute("mardik.version", bundle.version)
         span.set_attribute("mardik.request_id", rid)
         sections = decouper(texte, taille_max=taille_max)
+        # Brique 19 : des sections voisines regroupées = moins d'appels, donc une queue de latence
+        # plus courte (on attend le plus lent). 0 dans le bundle = comportement d'origine.
+        sections = regrouper(sections, int(bundle.parametres.get("regroupement_caracteres", 0)))
         span.set_attribute("mardik.sections", len(sections))
 
         parallelisme = max(1, int(bundle.parametres.get("parallelisme", 4)))

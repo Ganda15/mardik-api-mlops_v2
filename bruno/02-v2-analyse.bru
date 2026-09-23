@@ -1,0 +1,25 @@
+meta {
+  name: 02 · v2 — documents longs, score de confiance
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v2/analyse
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "texte": "CONTRAT DE PRESTATIONS\n\nArticle 1 — Durée\nLe présent contrat est conclu pour une durée de 12 mois.\n\nArticle 2 — Prix et paiement\nLe prix est de 10 000 euros hors taxes, payable à 30 jours.\n\nArticle 3 — Résiliation\nChaque partie peut résilier moyennant un préavis de deux mois."
+  }
+}
+
+docs {
+  Test d'acceptance 1 : la réponse respecte le contrat (docs/spec-v2-perimetre.md §2) — clauses avec
+  extrait littéral et confiance, `confiance_globale`, `libelle` (haute / moyenne / basse : la règle de
+  décision du juriste), `request_id` (à retrouver dans Jaeger), `sections` (le nombre d'appels au
+  modèle — regroupés depuis la brique 19), durée et coût. En-tête `X-Mardik-Version` : la version qui a
+  répondu. Jamais de troncature : au-delà du plafond, 413 explicite.
+}

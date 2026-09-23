@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "Mardik — La nouvelle version",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}
