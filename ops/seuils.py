@@ -15,7 +15,7 @@ from typing import Any
 import yaml
 
 CHEMIN_SEUILS = Path(__file__).resolve().parent.parent / "eval" / "thresholds.yml"
-SECTIONS = ("gate", "fenetre", "rollback_alerte", "promotion", "capture")
+SECTIONS = ("gate", "fenetre", "rollback_alerte", "promotion", "capture", "signature")
 
 
 class ErreurSeuils(RuntimeError):
