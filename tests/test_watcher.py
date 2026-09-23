@@ -42,7 +42,15 @@ def canary_v2(registry):
     return registry
 
 
+def le_temps_passe():
+    """Après une décision, le trafic arrive plus tard. Sous Windows l'horloge avance par pas de 15,6 ms
+    (mesuré le 23/09) : sans cette pause, une mesure prise juste après une décision porte le MÊME
+    horodatage qu'elle et sort de la fenêtre « depuis la décision » — test instable, pas le code."""
+    time.sleep(0.02)
+
+
 def trafic(metriques, version, n, *, score=0.99, erreur=False, latence=1500.0, cout=0.03):
+    le_temps_passe()
     for _ in range(n):
         metriques.enregistrer(
             Mesure(ts=time.time(), version=version, route="/analyse", latence_ms=latence,
@@ -82,7 +90,7 @@ def test_canary_conforme_monte_de_palier_puis_devient_active(seuils_demo, canary
     p = lignes(canary_v2, "promotion")[-1]
     assert p["palier"] == 50 and p["acteur"] == "watcher" and "valeurs" in p
 
-    trafic(metriques, "v2.0.0", 6)                          # une nouvelle fenêtre après la décision
+    trafic(metriques, "v2.0.0", 6)                          # une nouvelle fenêtre, après la décision
     tick(registry=canary_v2, metriques=metriques)
     assert canary_v2.active() == "v2.0.0" and canary_v2.canary() == (None, 0)
     assert canary_v2.index()["precedente"] == "v1.0.0"
