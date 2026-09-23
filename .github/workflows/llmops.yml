@@ -78,7 +78,7 @@ jobs:
         with:
           python-version: "3.11"
       - run: uv sync
-      - name: Test des données (C13) — eval/attendus.jsonl avant tout le reste
+      - name: Test des données (C13) — eval/attendus.jsonl + eval/attendus_production.jsonl, avant tout le reste
         run: uv run python -m eval.valider_attendus
       - name: Tests d'intégration (hérités de la remédiation)
         run: uv run pytest -q tests/integration
