@@ -1,4 +1,5 @@
-"""Proxy de dérive — [FOURNI]. Placé entre l'application et le fournisseur LLM.
+"""Proxy de dérive — [FOURNI], une correction le 23/09 (un seul client amont, voir ``_client_amont``).
+Placé entre l'application et le fournisseur LLM.
 
 Le modèle reste vrai ; la panne est commandée. Selon ``DRIFT`` :
 
@@ -108,6 +109,21 @@ def degrader_scores(corps: bytes) -> bytes:
     return json.dumps(data, ensure_ascii=False).encode("utf-8")
 
 
+_http: httpx.AsyncClient | None = None
+
+
+def _client_amont() -> httpx.AsyncClient:
+    """UN client vers le fournisseur, créé au premier appel et gardé : pool de connexions keep-alive.
+    Avant (23/09) : un ``AsyncClient`` neuf par requête relayée — une poignée de main TLS et une résolution
+    DNS par appel de section, depuis le conteneur. Mesuré sur 23 appels en parallèle (c12) : max 6,66 s via le
+    proxy contre 3,19 s en direct. Le délai vient de LLM_TIMEOUT_S au moment de la création."""
+    global _http
+    if _http is None:
+        timeout = float(os.environ.get("LLM_TIMEOUT_S", "60"))
+        _http = httpx.AsyncClient(timeout=timeout, limits=httpx.Limits(max_connections=64, max_keepalive_connections=32))
+    return _http
+
+
 @app.api_route("/{chemin:path}", methods=["GET", "POST"])
 async def relayer(chemin: str, request: Request) -> Response:
     mode = _etat["mode"]
@@ -127,16 +143,14 @@ async def relayer(chemin: str, request: Request) -> Response:
     entetes.update(extra)
     corps = await request.body()
     debut = time.perf_counter()
-    timeout = float(os.environ.get("LLM_TIMEOUT_S", "60"))
-    async with httpx.AsyncClient(timeout=timeout) as http:
-        try:
-            r = await http.request(request.method, url, content=corps, headers=entetes)
-        except httpx.HTTPError as exc:
-            return Response(
-                content=json.dumps({"error": f"amont injoignable : {exc}"}),
-                status_code=502,
-                media_type="application/json",
-            )
+    try:
+        r = await _client_amont().request(request.method, url, content=corps, headers=entetes)
+    except httpx.HTTPError as exc:
+        return Response(
+            content=json.dumps({"error": f"amont injoignable : {exc}"}),
+            status_code=502,
+            media_type="application/json",
+        )
     duree = time.perf_counter() - debut
     contenu = r.content
     if mode == "latence":
