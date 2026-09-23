@@ -38,9 +38,10 @@ capture:                       # enrichissement du jeu d'évaluation
   score_global_max: 0.5            # une analyse sous ce score est capturée (après masquage)
 
 signature:                     # la version en bonne santé : la référence de l'alerte de dérive (conception §3)
-  score_median: 0.993          # médiane du score sur des analyses réelles saines
-  part_score_bas: 0.059        # part des scores < 0,5 sur ces mêmes analyses
+  score_median: 0.993          # médiane du score sur des analyses réelles saines de la version actuelle
+  part_score_bas: 0.0          # part des scores < 0,5 sur ces mêmes analyses
   source: >-
-    17 analyses réelles v2 (Azure gpt-5.4) du 21 au 23/09/2026, fenêtre de la preuve de dérive du 22/09
-    (10:30–11:00 UTC) exclue ; mesuré dans ops/metrics.jsonl, validé par Era le 23/09. PROVISOIRE : à
-    remplacer par la signature calculée par le gate et portée par le manifeste (reste à faire).
+    8 analyses réelles v2 (Azure gpt-5.4, parallelisme 32) du 22/09 09:35 UTC au 23/09, fenêtre de la preuve de dérive
+    (22/09 10:30–11:00 UTC) exclue ; mesuré dans ops/metrics.jsonl. CORRIGÉ le 23/09 : la première valeur (5,9 %, « 17
+    analyses ») mêlait Ollama local du 21/09 et les runs à parallelisme 4 — trouvé en mesurant le détecteur (brique 18b).
+    PROVISOIRE : à remplacer par la signature calculée par le gate et portée par le manifeste (reste à faire).
