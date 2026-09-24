@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mardik v2 — Livrables</title>
+<style>
+  :root { --bg:#ffffff; --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --card:#f6f8fa; --link:#0969da; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --card:#151b23; --link:#4493f8; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:16px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 48px; }
+  h1 { font-size:1.6rem; margin:0 0 4px; }
+  h2 { font-size:1.1rem; margin:32px 0 12px; }
+  p.sub { color:var(--muted); margin:0 0 8px; }
+  ul { list-style:none; padding:0; margin:0; display:grid; gap:10px; }
+  li { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+  a { color:var(--link); text-decoration:none; font-weight:600; }
+  a:hover { text-decoration:underline; }
+  .desc { display:block; color:var(--muted); font-size:.92rem; margin-top:2px; }
+  .src { font-weight:400; font-size:.88rem; margin-left:8px; }
+  footer { margin-top:36px; color:var(--muted); font-size:.88rem; border-top:1px solid var(--line); padding-top:12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Mardik v2 — « La nouvelle version »</h1>
+  <p class="sub">Livrables de conception et de vérification — Eramalingam GANDAKUMAR (solo) · RNCP 37827</p>
+  <p class="sub">Copie exacte des fichiers du dépôt à la version <strong>v2.7.1</strong>. Chaque PDF s'ouvre dans le lecteur du navigateur.</p>
+
+  <h2>Documents (PDF)</h2>
+  <ul>
+    <li><a href="livrables/Mardik-Conception-Chantier1.pdf">Dossier de conception — Chantier 1 : la chaîne LLMOps</a>
+      <span class="desc">Besoin, contrat d'API v2, schéma de la chaîne, manifeste de version, hypothèses et limites, critères RNCP (24 pages)</span></li>
+    <li><a href="livrables/Mardik-Conception-Chantier2.pdf">Dossier de conception — Chantier 2 : l'observabilité qui pilote</a>
+      <span class="desc">Signaux, dérive et seuils, trois rétroactions, journal de pilotage, tests d'acceptance (16 pages)</span></li>
+    <li><a href="livrables/Mardik-Verification-Finale-2026-09-23.pdf">Vérification finale — le brief point par point contre la preuve</a>
+      <span class="desc">Les 10 tests d'acceptance, ce qui est prouvé en vrai, les livrables, ce qui n'est pas fait</span></li>
+    <li><a href="livrables/Mardik-Supplement-Vitesse-Cout-Hallucination.pdf">Supplément — vitesse, coût, hallucination</a>
+      <span class="desc">Latence et coût réels mesurés, deux outils de vérification testés, options</span></li>
+  </ul>
+
+  <h2>Schémas</h2>
+  <ul>
+    <li><a href="livrables/schema-systeme-mardik.png">Vue d'ensemble du système</a>
+      <a class="src" href="livrables/schema-systeme-mardik.drawio">source .drawio</a></li>
+    <li><a href="livrables/schema-chaine-llmops.png">Chaîne LLMOps : avant la fusion → gates → build → artefact → canary</a>
+      <a class="src" href="livrables/schema-chaine-llmops.drawio">source .drawio</a></li>
+    <li><a href="livrables/schema-boucle-tableau-blanc.png">Vue d'ensemble du Chantier 2</a>
+      <a class="src" href="livrables/schema-boucle-tableau-blanc.drawio">source .drawio</a></li>
+    <li><a href="livrables/schema-boucle-observabilite.png">Boucle d'observabilité : signaux → seuils → trois rétroactions</a>
+      <a class="src" href="livrables/schema-boucle-observabilite.drawio">source .drawio</a></li>
+  </ul>
+
+  <h2>Autour</h2>
+  <ul>
+    <li><a href="livrables/LISEZMOI.txt">LISEZMOI.txt</a>
+      <span class="desc">Le sommaire détaillé des livrables et ce qu'ils ne contiennent pas</span></li>
+    <li><a href="https://github.com/Ganda15/mardik-api-mlops_v2/tree/v2.7.1">Le code à la version v2.7.1 (GitHub)</a>
+      <span class="desc">API, chaîne LLMOps, tests, documentation d'exploitation</span></li>
+  </ul>
+
+  <footer>Les PDF font foi tels qu'envoyés au formateur ; cette page ne fait que les servir.</footer>
+</main>
+</body>
+</html>
