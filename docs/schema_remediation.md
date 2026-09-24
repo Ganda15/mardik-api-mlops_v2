@@ -20,9 +20,9 @@ dessus, on ne les refait pas.
 
 | Signal | Où | Comment le lire |
 |---|---|---|
-| **Traces** (OpenTelemetry) | spans `analyse.requete` → `llm.appel`, attributs `mardik.version`, `mardik.tronque`, `llm.latence_ms`, `llm.tokens` | en local : exportées sur la console en JSON (`OTEL_TRACES=console`) ; dans les tests : `InMemorySpanExporter` (fixture `span_exporter`) |
-| **Logs structurés** (structlog, JSON) | événements `analyse.terminee`, `analyse.echec` avec `version`, `latence_ms`, `clauses`, `tronque` | `docker compose logs app` ; dans les tests : `structlog.testing.capture_logs()` |
-| **Métriques** (`MetricsStore`) | une ligne JSON par requête dans `ops/metrics.jsonl` : `ts, version, route, latence_ms, erreur, score, cout_eur, appels_llm, tokens, tronque` | `MetricsStore().lire(depuis_s=300)` — c'est la source du tableau de bord et de la surveillance |
+| **Traces** (OpenTelemetry) | spans `analyse.requete` → `llm.appel`, attributs `mardik.version`, `mardik.request_id`, `mardik.section`, `llm.latence_ms`, `llm.tokens` | `OTEL_TRACES` = liste parmi `console`, `otlp` (Jaeger), `fichier` ; défaut `console,fichier` → **conservées** dans `ops/traces.jsonl` (24/09) ; dans les tests : `InMemorySpanExporter` |
+| **Logs structurés** (structlog, JSON) | événements `analyse.terminee`, `analyse.echec` avec `version`, `request_id`, `latence_ms`, `clauses` | console **et** `ops/logs.jsonl` (`LOGS_PATH`, 24/09) ; dans les tests : `structlog.testing.capture_logs()` |
+| **Métriques** (`MetricsStore`) | une ligne JSON par requête dans `ops/metrics.jsonl` : `ts, version, route, latence_ms, erreur, score, cout_eur, appels_llm, tokens, tronque, request_id` (`request_id` depuis le 24/09) | `MetricsStore().lire(depuis_s=300)` — c'est la source du tableau de bord et de la surveillance |
 
 Exemple d'une ligne de `ops/metrics.jsonl` :
 

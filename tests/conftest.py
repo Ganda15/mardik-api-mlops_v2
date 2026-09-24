@@ -40,6 +40,8 @@ def environnement(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setenv("EVAL_METRICS_PATH", str(tmp_path / "metrics_eval.jsonl"))  # 23/09 : les tests remplissaient eval/.metrics_eval.jsonl de faux couts
     monkeypatch.setenv("REGISTRY_PATH", str(tmp_path / "registry"))
     monkeypatch.setenv("OTEL_TRACES", "off")
+    monkeypatch.setenv("TRACES_PATH", str(tmp_path / "traces.jsonl"))  # 24/09 : jamais ops/traces.jsonl
+    monkeypatch.setenv("LOGS_PATH", str(tmp_path / "logs.jsonl"))      # ni ops/logs.jsonl
     return tmp_path
 
 

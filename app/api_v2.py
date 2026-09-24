@@ -110,6 +110,7 @@ def analyser_v2(
     with telemetry.tracer.start_as_current_span("analyse.requete") as span:
         span.set_attribute("mardik.version", bundle.version)
         span.set_attribute("mardik.request_id", rid)
+        span.set_attribute("llm.modele", bundle.modele)  # le modèle réellement appelé (le manifeste dit celui visé)
         sections = decouper(texte, taille_max=taille_max)
         # Brique 19 : des sections voisines regroupées = moins d'appels, donc une queue de latence
         # plus courte (on attend le plus lent). 0 dans le bundle = comportement d'origine.
@@ -141,6 +142,7 @@ def analyser_v2(
                     route="/v2/analyse",
                     latence_ms=latence,
                     erreur=True,
+                    request_id=rid,
                 )
             )
             telemetry.logger.error(
@@ -180,6 +182,7 @@ def analyser_v2(
                 tokens_entree=tokens_entree,
                 tokens_sortie=tokens_sortie,
                 tronque=False,
+                request_id=rid,
             )
         )
         telemetry.logger.info(
