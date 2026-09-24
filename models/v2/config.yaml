@@ -48,14 +48,14 @@ parametres:
                                    # valeurs de travail, à ajuster au Chantier 2 sur les distributions observées
   calibration:                    # 24/09 : score brut -> probabilité mesurée que la clause soit juste (Platt)
     methode: platt                #   p = sigma(a * logit(score) + b) — app/pipeline/calibration.py
-    a: 3.365432                   #   appris par `python -m eval.calibration ajuster` sur eval/calibration_donnees.jsonl :
-    b: -6.911573                  #   190 clauses réelles (13 contrats étiquetés x 2 passes, gpt-5.4), dont 4 fausses
-    points: 190                   #   ECE (leave-one-contract-out) 0.0219 -> 0.0012 ; Brier 0.0106 -> 0.0001
-    faux: 4                       #   limite : aucune donnée entre 0.77 et 0.95 brut — la courbe y est extrapolée
-    plafond: 0.984                #   186 justes sur 186 : règle de trois, erreur < 3/186 -> jamais plus de 0.984
-    ece_loco_avant: 0.021947
-    ece_loco_apres: 0.001204
-    source: eval/calibration_donnees.jsonl
+    a: 3.714411                   #   appris par `python -m eval.calibration ajuster` sur 431 clauses réelles (gpt-5.4) :
+    b: -7.749727                  #   190 des 13 contrats étiquetés (x 2 passes) + 241 de 37 variantes « sans un article »
+    points: 431                   #   (ablation : étiquette connue par construction). 13 fausses, toutes « garantie ».
+    faux: 13                      #   ECE (leave-one-contract-out) 0.0262 -> 0.0004 ; Brier 0.0124 -> 0.00001
+    plafond: 0.993                #   418 justes sur 418 au-dessus de 0.95 : règle de trois, jamais plus de 1 - 3/418
+    ece_loco_avant: 0.026218      #   Aucune réponse entre 0.77 et 0.95 brut sur 431 : le modèle ne parle pas dans
+    ece_loco_apres: 0.000428      #   cette zone (sûr et juste >= 0.95, hésitant et faux <= 0.76).
+    source: eval/calibration_donnees.jsonl + eval/calibration_ablation.jsonl
 
 schema_sortie:
   type: object

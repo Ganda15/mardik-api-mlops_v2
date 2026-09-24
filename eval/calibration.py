@@ -1,6 +1,7 @@
 """Calibration du score de confiance : collecte étiquetée, ajustement de Platt, évaluation honnête.
 
     python -m eval.calibration collecter --essais 2          # VRAI modèle (coût réel, ~0,40 € par passe)
+    python -m eval.calibration ablation                       # VRAI modèle : variantes sans un article (~1,3 €)
     python -m eval.calibration ajuster                        # ajuste Platt et affiche le bloc YAML à mettre dans le bundle
 
 Données : pour chaque contrat étiqueté (eval/attendus.jsonl + eval/attendus_production.jsonl), chaque clause RENVOYÉE
@@ -98,6 +99,44 @@ def evaluer_loco(points: list[dict]) -> dict:
             "brier_avant": brier(avant, ys), "brier_apres": brier(apres, ys)}
 
 
+ABLATION = RACINE / "eval" / "calibration_ablation.jsonl"
+
+# Ablation : titres d'article DISTINCTIFS -> type de clause. Durée, prix et droit applicable sont exclus : ils sont
+# cités dans d'autres articles, l'étiquette « absente » ne serait pas fiable. Ordre = priorité (types les plus rares
+# d'abord, pour couvrir le plus de variété sous le plafond par contrat).
+TITRE_VERS_TYPE = {
+    "Exclusivité": "exclusivité", "Non-concurrence": "non-concurrence", "Reconduction": "reconduction tacite",
+    "Données personnelles": "données personnelles", "Force majeure": "force majeure",
+    "Propriété intellectuelle": "propriété intellectuelle", "Garantie": "garantie", "Pénalités": "pénalité de retard",
+    "Responsabilité": "limitation de responsabilité", "Confidentialité": "confidentialité", "Résiliation": "résiliation",
+}
+
+
+def retirer_article(texte: str, titre: str) -> str | None:
+    """Retire l'article « Article N — <titre> » (titre et corps, jusqu'à l'article suivant). None s'il est absent."""
+    lignes = texte.splitlines(keepends=True)
+    debut = next((i for i, lg in enumerate(lignes)
+                  if lg.startswith("Article ") and lg.rstrip().endswith("— " + titre)), None)
+    if debut is None:
+        return None
+    fin = next((j for j in range(debut + 1, len(lignes)) if lignes[j].startswith("Article ")), len(lignes))
+    return "".join(lignes[:debut] + lignes[fin:])
+
+
+def variantes_ablation(contrat: str, texte: str, attendues: set[str], max_par_contrat: int = 3) -> list[dict]:
+    """Une variante par article distinctif retiré, dont le type était attendu : étiquette = attendues - {type}."""
+    out = []
+    for titre, type_ in TITRE_VERS_TYPE.items():
+        if len(out) >= max_par_contrat:
+            break
+        if type_ not in attendues:
+            continue
+        variante = retirer_article(texte, titre)
+        if variante is not None:
+            out.append({"contrat": contrat, "retire": type_, "texte": variante, "attendues": attendues - {type_}})
+    return out
+
+
 def _attendus() -> dict[str, tuple[set[str], Path]]:
     out = {}
     for fichier in (RACINE / "eval" / "attendus.jsonl", RACINE / "eval" / "attendus_production.jsonl"):
@@ -132,17 +171,58 @@ def collecter(essais: int, sortie: Path = DONNEES) -> int:
     return len(lignes)
 
 
+def collecter_ablation(max_par_contrat: int = 3, sortie: Path = ABLATION) -> int:
+    """Passe chaque variante (un article distinctif retiré) dans la v2 sur le VRAI modèle ; un point par clause
+    renvoyée, étiqueté contre attendues - {type retiré}. `contrat` = contrat SOURCE : l'évaluation leave-one-contract-out
+    garde ainsi une variante avec son original, jamais d'un côté et de l'autre."""
+    if os.environ.get("MOCK", "off").lower() == "on":
+        raise SystemExit("MOCK=on : la calibration doit être apprise sur le vrai modèle, jamais sur des réponses rejouées")
+    from app.api_v2 import analyser_v2
+    from app.llm_client import Bundle, LLMClient
+    from app.telemetry import NoopSpanExporter, build_telemetry
+    tele = build_telemetry(span_exporter=NoopSpanExporter(), level="WARNING",
+                           metrics_path=os.environ.get("EVAL_METRICS_PATH", str(RACINE / "eval" / ".metrics_eval.jsonl")))
+    client = LLMClient(Bundle.charger("v2"))
+    lignes, cout = [], 0.0
+    for cid, (attendues, chemin) in _attendus().items():
+        for v in variantes_ablation(cid, chemin.read_text(encoding="utf-8"), attendues, max_par_contrat):
+            rep = analyser_v2(v["texte"], client, tele)
+            cout += rep.cout_eur
+            for c in rep.clauses:
+                lignes.append({"contrat": cid, "variante": f"sans {v['retire']}", "type": c.type,
+                               "score": round(c.confiance, 4), "correct": int(c.type in v["attendues"]),
+                               "modele": rep.modele})
+            signale = any(c.type == v["retire"] for c in rep.clauses)
+            print(f"{cid} sans {v['retire']}: {len(rep.clauses)} clauses, retiré encore signalé: {signale}, {rep.cout_eur:.4f} €")
+    sortie.write_text("".join(json.dumps(pt, ensure_ascii=False) + "\n" for pt in lignes), encoding="utf-8")
+    print(f"coût total : {cout:.3f} €")
+    return len(lignes)
+
+
+def charger_points() -> list[dict]:
+    points = []
+    for fichier in (DONNEES, ABLATION):
+        if fichier.exists():
+            points += [json.loads(ligne) for ligne in fichier.read_text(encoding="utf-8").splitlines() if ligne.strip()]
+    return points
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m eval.calibration")
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("collecter")
     c.add_argument("--essais", type=int, default=1)
+    a = sub.add_parser("ablation")
+    a.add_argument("--max-par-contrat", type=int, default=3)
     sub.add_parser("ajuster")
     args = ap.parse_args(argv)
     if args.cmd == "collecter":
         print("points écrits :", collecter(args.essais))
         return 0
-    points = [json.loads(ligne) for ligne in DONNEES.read_text(encoding="utf-8").splitlines() if ligne.strip()]
+    if args.cmd == "ablation":
+        print("points écrits :", collecter_ablation(args.max_par_contrat))
+        return 0
+    points = charger_points()
     par = ajuster_platt([p["score"] for p in points], [p["correct"] for p in points])
     justes = sum(p["correct"] for p in points)
     par["plafond"] = round(1 - 3 / justes, 3) if justes else 1.0   # règle de trois
