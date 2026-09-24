@@ -1,0 +1,241 @@
+{"contrat": "c01", "variante": "sans confidentialité", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans confidentialité", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans confidentialité", "type": "garantie", "score": 0.58, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans confidentialité", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans confidentialité", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans résiliation", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans résiliation", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans résiliation", "type": "confidentialité", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans résiliation", "type": "garantie", "score": 0.54, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c01", "variante": "sans résiliation", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans garantie", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans garantie", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans garantie", "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans garantie", "type": "garantie", "score": 0.51, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans garantie", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans garantie", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans pénalité de retard", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans pénalité de retard", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans pénalité de retard", "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans pénalité de retard", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans pénalité de retard", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans résiliation", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans résiliation", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans résiliation", "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans résiliation", "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "variante": "sans résiliation", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans reconduction tacite", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans reconduction tacite", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans reconduction tacite", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans reconduction tacite", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans reconduction tacite", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans propriété intellectuelle", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans propriété intellectuelle", "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans propriété intellectuelle", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans propriété intellectuelle", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans propriété intellectuelle", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans confidentialité", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans confidentialité", "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans confidentialité", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans confidentialité", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans confidentialité", "type": "garantie", "score": 0.72, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c03", "variante": "sans confidentialité", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans données personnelles", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans données personnelles", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans données personnelles", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans données personnelles", "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans données personnelles", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans données personnelles", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans force majeure", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans force majeure", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans force majeure", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans force majeure", "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans force majeure", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans force majeure", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans limitation de responsabilité", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans limitation de responsabilité", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans limitation de responsabilité", "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans limitation de responsabilité", "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans limitation de responsabilité", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "variante": "sans limitation de responsabilité", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans exclusivité", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans exclusivité", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans exclusivité", "type": "non-concurrence", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans exclusivité", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans exclusivité", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans non-concurrence", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans non-concurrence", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans non-concurrence", "type": "exclusivité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans non-concurrence", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans non-concurrence", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans résiliation", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans résiliation", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans résiliation", "type": "exclusivité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans résiliation", "type": "non-concurrence", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans résiliation", "type": "garantie", "score": 0.71, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c05", "variante": "sans résiliation", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans garantie", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans garantie", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans garantie", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans garantie", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans garantie", "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans garantie", "type": "garantie", "score": 0.56, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans garantie", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans pénalité de retard", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans pénalité de retard", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans pénalité de retard", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans pénalité de retard", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans pénalité de retard", "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans pénalité de retard", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans limitation de responsabilité", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans limitation de responsabilité", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans limitation de responsabilité", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans limitation de responsabilité", "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans limitation de responsabilité", "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "variante": "sans limitation de responsabilité", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans reconduction tacite", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans force majeure", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "variante": "sans propriété intellectuelle", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans données personnelles", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans données personnelles", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans données personnelles", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans données personnelles", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans données personnelles", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans confidentialité", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans confidentialité", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans confidentialité", "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans confidentialité", "type": "garantie", "score": 0.72, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans confidentialité", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans confidentialité", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans résiliation", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans résiliation", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans résiliation", "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans résiliation", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "variante": "sans résiliation", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans force majeure", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans force majeure", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans force majeure", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans force majeure", "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans force majeure", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans force majeure", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans propriété intellectuelle", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans propriété intellectuelle", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans propriété intellectuelle", "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans propriété intellectuelle", "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans propriété intellectuelle", "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans propriété intellectuelle", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans garantie", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans garantie", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans garantie", "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans garantie", "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans garantie", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "variante": "sans garantie", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "non-concurrence", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans exclusivité", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "exclusivité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans non-concurrence", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "exclusivité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "non-concurrence", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "variante": "sans données personnelles", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans limitation de responsabilité", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans limitation de responsabilité", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans limitation de responsabilité", "type": "garantie", "score": 0.56, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans limitation de responsabilité", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans limitation de responsabilité", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans résiliation", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans résiliation", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans résiliation", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "variante": "sans résiliation", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans reconduction tacite", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans données personnelles", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "variante": "sans force majeure", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans garantie", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans garantie", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans garantie", "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans garantie", "type": "garantie", "score": 0.52, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans garantie", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans garantie", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans pénalité de retard", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans pénalité de retard", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans pénalité de retard", "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans pénalité de retard", "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans pénalité de retard", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans résiliation", "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans résiliation", "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans résiliation", "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans résiliation", "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "variante": "sans résiliation", "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}

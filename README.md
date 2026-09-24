@@ -149,10 +149,12 @@ tests/      acceptance/ (les 10 du brief) · integration/ · un fichier par briq
 
 ## Limites, dites telles quelles
 
-- Le **score de confiance calibré** (`confiance_calibree`, calibration de Platt) est appris sur 190 clauses réelles de
-  13 contrats étiquetés, dont **seulement 4 fausses** : l'erreur de calibration (ECE, contrat par contrat) passe de 0,022
-  à 0,001, mais aucune donnée n'existe entre 0,77 et 0,95 de score brut — la courbe y est extrapolée — et la probabilité
-  est plafonnée à 0,984 (règle de trois). Le score brut `confiance` reste celui du watcher et des seuils de dérive.
+- Le **score de confiance calibré** (`confiance_calibree`, calibration de Platt) est appris sur **431 clauses réelles** :
+  13 contrats étiquetés et 37 variantes dont un article a été retiré (étiquette connue par construction). L'erreur de
+  calibration (ECE, contrat par contrat) passe de 0,026 à 0,0004. Les 13 clauses fausses sont **toutes « garantie »** :
+  c'est le seul type sur lequel le modèle se trompe. Aucune réponse n'est tombée entre 0,77 et 0,95 de score brut
+  (le modèle est soit sûr et juste, soit hésitant et faux) ; la probabilité est plafonnée à 0,993 (règle de trois).
+  Le score brut `confiance` reste celui du watcher et des seuils de dérive.
 - Le **coût** est calculé aux tarifs catalogue du modèle (entrée / sortie) ; la facture Azure réelle reste à rapprocher.
 - La **latence** dépend de la file du fournisseur : des passages du gate réel sur GitHub ont dépassé 8 s (jusqu'à 12,5 s) — le gate les a bloqués.
 - **Plafond de taille** : au-delà de 200 000 caractères (~65 pages), `/v2` répond `413` avant tout appel au modèle.
