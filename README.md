@@ -57,7 +57,7 @@ exister mot pour mot dans le contrat, sinon le score de la clause tombe à 0.
 | Route | Rôle |
 |---|---|
 | `POST /v1/analyse` | l'API historique, inchangée |
-| `POST /v2/analyse` | contrat entier → clauses, extraits, `confiance_globale`, `libelle` (haute / moyenne / basse), `request_id` ; erreurs explicites `422` (requête invalide) et `503` (fournisseur indisponible, avec `request_id`) |
+| `POST /v2/analyse` | contrat entier → clauses, extraits, `confiance_globale`, `libelle` (haute / moyenne / basse), `confiance_calibree` par clause et `confiance_globale_calibree` (probabilités mesurées), `request_id` ; erreurs explicites `422` (requête invalide), `413` (document trop volumineux) et `503` (fournisseur indisponible, avec `request_id`) |
 | `POST /analyse` | la gateway : route vers v1 ou la version canary, en-tête `X-Mardik-Version` |
 | `GET /gateway/etat` | quelle version sert quel trafic, et d'où vient le pourcentage |
 | `GET /pilotage`, `/pilotage/etat`, `/pilotage/journal` | la page de pilotage : signaux par version, alertes, journal |
@@ -149,13 +149,13 @@ tests/      acceptance/ (les 10 du brief) · integration/ · un fichier par briq
 
 ## Limites, dites telles quelles
 
-- Le **score de confiance** est l'auto-évaluation du modèle, pénalisée si l'extrait n'est pas dans le texte — il
-  n'est **pas calibré** statistiquement.
+- Le **score de confiance calibré** (`confiance_calibree`, calibration de Platt) est appris sur 190 clauses réelles de
+  13 contrats étiquetés, dont **seulement 4 fausses** : l'erreur de calibration (ECE, contrat par contrat) passe de 0,022
+  à 0,001, mais aucune donnée n'existe entre 0,77 et 0,95 de score brut — la courbe y est extrapolée — et la probabilité
+  est plafonnée à 0,984 (règle de trois). Le score brut `confiance` reste celui du watcher et des seuils de dérive.
 - Le **coût** est calculé aux tarifs catalogue du modèle (entrée / sortie) ; la facture Azure réelle reste à rapprocher.
 - La **latence** dépend de la file du fournisseur : des passages du gate réel sur GitHub ont dépassé 8 s (jusqu'à 12,5 s) — le gate les a bloqués.
-- **Pas de plafond de taille** sur `/v2` : un document démesuré est découpé en centaines d'appels, le fournisseur les
-  limite (`429`) et l'API répond `503` explicitement — mais après avoir payé la première vague. Le refus en amont
-  (`413` au-delà d'un plafond), prévu à la conception, n'est pas construit.
+- **Plafond de taille** : au-delà de 200 000 caractères (~65 pages), `/v2` répond `413` avant tout appel au modèle.
 - Le **masquage** des cas de production est partiel par construction (une regex ne voit pas un nom sans forme
   juridique) : l'anonymisation avec le client reste ouverte.
 - Le **lien public** passe par un tunnel éphémère : c'est une démonstration, pas un hébergement.

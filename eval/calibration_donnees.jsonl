@@ -1,0 +1,190 @@
+{"contrat": "c01", "essai": 1, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 1, "type": "confidentialité", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 1, "type": "garantie", "score": 0.63, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 1, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 1, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 1, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 1, "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 1, "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 1, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 1, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 1, "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 1, "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 1, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 1, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 1, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 1, "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 1, "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 1, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 1, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 1, "type": "exclusivité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 1, "type": "non-concurrence", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 1, "type": "garantie", "score": 0.71, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 1, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 1, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 1, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 1, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 1, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 1, "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 1, "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 1, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 1, "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 1, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 1, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 1, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 1, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 1, "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 1, "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 1, "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 1, "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "exclusivité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "non-concurrence", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 1, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 1, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 1, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 1, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 1, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 1, "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 1, "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 1, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 1, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 2, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 2, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 2, "type": "confidentialité", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 2, "type": "garantie", "score": 0.72, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 2, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c01", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 2, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 2, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 2, "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 2, "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 2, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c02", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 2, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 2, "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 2, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 2, "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 2, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c03", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 2, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 2, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 2, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 2, "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 2, "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 2, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c04", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 2, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 2, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 2, "type": "garantie", "score": 0.76, "correct": 0, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 2, "type": "exclusivité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 2, "type": "non-concurrence", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 2, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c05", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 2, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 2, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 2, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 2, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 2, "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 2, "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c06", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c07", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 2, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 2, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 2, "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 2, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 2, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c08", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 2, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 2, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 2, "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 2, "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 2, "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 2, "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c09", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "exclusivité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "non-concurrence", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c10", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 2, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 2, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 2, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 2, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c11", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "durée", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "reconduction tacite", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "prix et paiement", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "garantie", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "pénalité de retard", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "données personnelles", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "limitation de responsabilité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "force majeure", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "résiliation", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "confidentialité", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "propriété intellectuelle", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "c12", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 2, "type": "durée", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 2, "type": "prix et paiement", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 2, "type": "pénalité de retard", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 2, "type": "garantie", "score": 1.0, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 2, "type": "résiliation", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}
+{"contrat": "prod-req_0f26491a2c08", "essai": 2, "type": "droit applicable", "score": 0.99, "correct": 1, "modele": "gpt-5.4"}

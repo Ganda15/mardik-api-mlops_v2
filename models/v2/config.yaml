@@ -46,6 +46,16 @@ parametres:
     haute: 0.8                    #   score global >= 0.8 → « haute » → valider
     moyenne: 0.5                  #   >= 0.5 → « moyenne » → vérifier les clauses sous 0.7 ; sinon « basse »
                                    # valeurs de travail, à ajuster au Chantier 2 sur les distributions observées
+  calibration:                    # 24/09 : score brut -> probabilité mesurée que la clause soit juste (Platt)
+    methode: platt                #   p = sigma(a * logit(score) + b) — app/pipeline/calibration.py
+    a: 3.365432                   #   appris par `python -m eval.calibration ajuster` sur eval/calibration_donnees.jsonl :
+    b: -6.911573                  #   190 clauses réelles (13 contrats étiquetés x 2 passes, gpt-5.4), dont 4 fausses
+    points: 190                   #   ECE (leave-one-contract-out) 0.0219 -> 0.0012 ; Brier 0.0106 -> 0.0001
+    faux: 4                       #   limite : aucune donnée entre 0.77 et 0.95 brut — la courbe y est extrapolée
+    plafond: 0.984                #   186 justes sur 186 : règle de trois, erreur < 3/186 -> jamais plus de 0.984
+    ece_loco_avant: 0.021947
+    ece_loco_apres: 0.001204
+    source: eval/calibration_donnees.jsonl
 
 schema_sortie:
   type: object

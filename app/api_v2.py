@@ -42,6 +42,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.llm_client import Bundle, ErreurLLM, LLMClient
+from app.pipeline.calibration import calibrer
 from app.pipeline.confiance import Clause, clauses_prouvees, libeller, scorer
 from app.pipeline.consolidation import consolider
 from app.pipeline.decoupage import Section, decouper, regrouper
@@ -64,11 +65,13 @@ class ClauseV2(BaseModel):
     extrait: str
     confiance: float
     sections: list[int]
+    confiance_calibree: float | None = None  # probabilité mesurée que la clause soit juste (calibration de Platt)
 
 
 class ReponseAnalyseV2(BaseModel):
     clauses: list[ClauseV2]
     confiance_globale: float
+    confiance_globale_calibree: float | None = None  # moyenne des probabilités calibrées
     libelle: str  # niveau de certitude pour le juriste : haute / moyenne / basse (H6)
     request_id: str  # corrélation réponse ↔ journaux ↔ trace (spec §2, champ additif)
     modele: str
@@ -188,12 +191,18 @@ def analyser_v2(
             sections=len(sections),
         )
 
+    calib = bundle.parametres.get("calibration")
+    probas = [calibrer(c.confiance, calib) for c in clauses_notees]
+    globale_calibree = (round(sum(probas) / len(probas), 4)
+                        if probas and all(p is not None for p in probas) else None)
     return ReponseAnalyseV2(
         clauses=[
-            ClauseV2(type=c.type, extrait=c.extrait, confiance=c.confiance, sections=c.sections)
-            for c in clauses_notees
+            ClauseV2(type=c.type, extrait=c.extrait, confiance=c.confiance, sections=c.sections,
+                     confiance_calibree=p)
+            for c, p in zip(clauses_notees, probas)
         ],
         confiance_globale=confiance_globale,
+        confiance_globale_calibree=globale_calibree,
         libelle=libeller(confiance_globale, bundle.parametres.get("seuils_libelle")),
         request_id=rid,
         modele=bundle.modele,
