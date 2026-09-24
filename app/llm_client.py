@@ -388,15 +388,20 @@ def reponse_de_repli(texte: str, *, json_mode: bool) -> str:
     contrat a été tronqué avant l'appel (v1), les clauses de la fin manquent,
     exactement comme avec le vrai modèle.
     """
-    minuscule = texte.lower()
+    # Le prompt utilisateur commence par une ligne « Titre : ... » (extraction v2) :
+    # chercher les extraits dans le seul corps du document — un extrait doit être
+    # une citation littérale du contrat (clauses_prouvees, 23/09) ; l'en-tête
+    # rejoué comme extrait ne figure pas dans le texte analysé.
+    corps = texte.split("\n\n", 1)[1] if texte.startswith("Titre :") else texte
+    minuscule = corps.lower()
     trouvees: list[dict[str, Any]] = []
     for type_clause, mots in TYPES_CLAUSES.items():
         for mot in mots:
             pos = minuscule.find(mot)
             if pos != -1:
-                debut = max(0, texte.rfind("\n", 0, pos) + 1)
-                fin = texte.find("\n", pos)
-                extrait = texte[debut : fin if fin != -1 else len(texte)].strip()[:240]
+                debut = max(0, corps.rfind("\n", 0, pos) + 1)
+                fin = corps.find("\n", pos)
+                extrait = corps[debut : fin if fin != -1 else len(corps)].strip()[:240]
                 trouvees.append(
                     {"type": type_clause, "extrait": extrait, "confiance": 0.86}
                 )
