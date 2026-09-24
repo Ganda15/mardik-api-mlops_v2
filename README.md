@@ -146,6 +146,7 @@ tests/      acceptance/ (les 10 du brief) · integration/ · un fichier par briq
 | [`docs/spec-ch2-pilotage.md`](docs/spec-ch2-pilotage.md) | Chantier 2 : signaux, seuils, boucles, ordre des briques, divergences |
 | [`docs/exploitation.md`](docs/exploitation.md) | le runbook : versions, chaîne, déploiement, rollback, preuves réelles, coût |
 | [`docs/qualite-c12-c13.md`](docs/qualite-c12-c13.md) | couverture de tests et test des données |
+| [`docs/livrables/`](docs/livrables/) | les livrables envoyés au formateur : dossiers de conception Ch1 et Ch2, vérification finale, supplément vitesse-coût-hallucination (PDF) et les 4 schémas (`.png` + `.drawio` éditable) — sommaire dans [`LISEZMOI.txt`](docs/livrables/LISEZMOI.txt) |
 
 ## Limites, dites telles quelles
 

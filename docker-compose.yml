@@ -13,7 +13,9 @@ services:
       LLM_PROXY_URL: http://proxy:8080
       METRICS_PATH: /app/ops/metrics.jsonl
       REGISTRY_PATH: /app/ops/registry
-      OTEL_TRACES: otlp                                                   # traces vers Jaeger
+      OTEL_TRACES: otlp,fichier                                           # Jaeger pour voir, ops/traces.jsonl pour garder
+      TRACES_PATH: /app/ops/traces.jsonl
+      LOGS_PATH: /app/ops/logs.jsonl
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318/v1/traces
     volumes:
       - ./ops:/app/ops          # registre, journal et métriques partagés avec le dashboard
@@ -89,7 +91,9 @@ services:
       LLM_PROXY_URL: http://proxy:8080
       METRICS_PATH: /app/ops/metrics.jsonl   # même journal : le plafond compte toutes les analyses
       REGISTRY_PATH: /app/ops/registry
-      OTEL_TRACES: otlp
+      OTEL_TRACES: otlp,fichier
+      TRACES_PATH: /app/ops/traces.jsonl
+      LOGS_PATH: /app/ops/logs.jsonl
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318/v1/traces
     volumes:
       - ./ops:/app/ops

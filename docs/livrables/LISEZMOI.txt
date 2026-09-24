@@ -1,0 +1,49 @@
+Mardik v2 - La nouvelle version - Livrable de conception (Chantier 1 et Chantier 2)
+Eramalingam GANDAKUMAR (solo) - version du 18/09/2026, 17h20
+
+CONTENU DU DOSSIER
+
+  Mardik-Conception-Chantier1.pdf   Dossier de conception, Chantier 1 : la chaine LLMOps (24 pages)
+                                    - 1 synthese du besoin (demi-page) + 1 bis complements et vue d'ensemble
+                                    - 2 contrat d'API v2 (entrees/sorties, score, erreurs, versionnage)
+                                    - 3 schema de la chaine, dont 3.0 avant la fusion et "quand un gate echoue"
+                                    - 4 manifeste de version, dont 4.6 choix d'outils non triviaux
+                                    - 5 hypotheses et limites, 6 criteres RNCP, annexe A, glossaire
+
+  Mardik-Conception-Chantier2.pdf   Dossier de conception, Chantier 2 : l'observabilite qui pilote (16 pages)
+                                    - 2 les cinq signaux, 3 derive et seuils, 4 les trois retroactions
+                                    - 5 journal de pilotage, 6 watcher/alerte/bouton/API de pilotage
+                                    - 10 schema de la boucle, 11 tableau de pilotage, 12 tests d'acceptance
+                                    - 12 bis choix d'outils non triviaux, 13 hypotheses/limites/divergences
+
+  schema-systeme-mardik.png         Vue d'ensemble du systeme, style tableau blanc (Ch1 p. 3) - accepte par le formateur
+  schema-chaine-llmops.png          Chaine LLMOps : avant la fusion -> gates -> build -> artefact -> canary (Ch1 p. 9)
+  schema-boucle-tableau-blanc.png   Vue d'ensemble du Chantier 2, style tableau blanc (Ch2 p. 3)
+  schema-boucle-observabilite.png   Boucle d'observabilite : signaux -> seuils -> trois retroactions (Ch2 p. 10)
+
+  *.drawio                          Les memes quatre schemas, sources editables (app.diagrams.net / draw.io)
+
+CE QUE CE DOSSIER NE CONTIENT PAS (dit franchement)
+  - aucun code, aucune mesure : le depot du brief n'etait pas accessible au moment de la conception
+  - la revue automatisee de pull request (Claude Code GitHub Action, jeton d'abonnement) est concue, pas encore installee
+  - la signature cosign des images est differee
+  - les seuils du Chantier 2 sont des valeurs de travail, a poser sur les premieres distributions reelles
+
+----------------------------------------------------------------------------------------------------
+AJOUT DU 23/09/2026 - apres le developpement (Chantier 1 et Chantier 2)
+
+  Mardik-Verification-Finale-2026-09-23.pdf   Verification finale, le brief point par point contre la preuve (4 pages)
+                                    - sommaire en page 1, numeros de page verifies apres rendu
+                                    - 1 les 10 tests d'acceptance fournis, par nom : 10/10 verts
+                                    - 2 ce qui est prouve en vrai (chaine, gate reel, les trois boucles, latence, cout)
+                                    - 3 les 5 livrables et ou ils se trouvent
+                                    - 4 les questions de reflexion du brief, et ce qui a change depuis la conception
+                                    - 5 ce qui n'est pas fait
+
+  Mardik-Supplement-Vitesse-Cout-Hallucination.pdf   Supplement (5 pages)
+                                    - 1 ce qui a ete reduit, mesure : latence (c12 11,5 s -> 2,75-4,20 s), cout reel
+                                    - 2 deux outils de verification testes, non integres : TypeSafe 8/8, Laya 7/8
+                                    - 3 options si l'on va plus loin
+
+  Le code, les tests et la documentation d'exploitation sont dans le depot GitHub
+  Ganda15/mardik-api-mlops_v2 (derniere version publiee : v2.7.0, le 24/09/2026).
