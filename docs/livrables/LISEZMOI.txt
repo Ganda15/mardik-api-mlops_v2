@@ -47,3 +47,12 @@ AJOUT DU 23/09/2026 - apres le developpement (Chantier 1 et Chantier 2)
 
   Le code, les tests et la documentation d'exploitation sont dans le depot GitHub
   Ganda15/mardik-api-mlops_v2 (derniere version publiee : v2.7.0, le 24/09/2026).
+
+----------------------------------------------------------------------------------------------------
+AJOUT DU 25/09/2026 - verification finale mise a jour (v2.7.1 et PR #17)
+
+  Mardik-Verification-Finale-2026-09-25.pdf   (6 pages, sommaire en page 1)
+                                    - la tracabilite complete d'une analyse (request_id partout, commande ops.tracer)
+                                    - l'arbre des spans parents/enfants et deux traces Jaeger reelles, avant et apres
+                                    - les retours de la seance du 25/09 verifies contre le code, et leur suite
+                                    - ce qui n'est pas fait

@@ -113,6 +113,24 @@ def historique(
     }
 
 
+def _en_arbre(spans: list[dict[str, Any]]) -> list[tuple[dict[str, Any], int]]:
+    """Les spans dans l'ordre de l'arbre (parent puis ses enfants, par heure de début), avec leur profondeur."""
+    ids = {s.get("span_id") for s in spans}
+    enfants: dict[Any, list[dict[str, Any]]] = {}
+    for s in spans:
+        parent = s.get("parent_id") if s.get("parent_id") in ids else None
+        enfants.setdefault(parent, []).append(s)
+    ordre: list[tuple[dict[str, Any], int]] = []
+
+    def parcourir(parent: Any, profondeur: int) -> None:
+        for s in sorted(enfants.get(parent, []), key=lambda x: x.get("debut", 0)):
+            ordre.append((s, profondeur))
+            parcourir(s.get("span_id"), profondeur + 1)
+
+    parcourir(None, 0)
+    return ordre
+
+
 def _afficher(h: dict[str, Any]) -> str:
     m = h["metriques"]
     if m is None and not h["trace"] and not h["journaux"]:
@@ -126,11 +144,12 @@ def _afficher(h: dict[str, Any]) -> str:
         out.append("[1] Métriques : aucune ligne (fichier écrit avant le 24/09 ?)")
     appele = next((s["attributs"]["llm.modele"] for s in h["trace"] if "llm.modele" in s.get("attributs", {})), None)
     out.append(f"[2] Trace : {len(h['trace'])} étape(s) · modèle appelé {appele or 'non tracé (avant le 24/09)'}")
-    for s in h["trace"]:
+    for s, profondeur in _en_arbre(h["trace"]):
         a = s.get("attributs", {})
         detail = f" section {a['mardik.section']} · LLM {a.get('llm.latence_ms', 0):.0f} ms · {a.get('llm.tokens')} jetons" \
             if "mardik.section" in a else ""
-        out.append(f"      {s['nom']:<16} {s['duree_ms']:>9.1f} ms  {s['statut']}{detail}")
+        nom = "  " * profondeur + s["nom"]
+        out.append(f"      {nom:<30} {s['duree_ms']:>9.1f} ms  {s['statut']}{detail}")
     out.append("[3] Journaux : " + (", ".join(e.get("event", "?") for e in h["journaux"]) or "aucun"))
     man = h["manifeste"]
     out.append("[4] Manifeste : " + (f"modèle visé {man.get('modele')} · commit {man.get('commit')} · empreinte "
