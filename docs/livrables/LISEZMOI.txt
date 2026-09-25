@@ -51,7 +51,7 @@ AJOUT DU 23/09/2026 - apres le developpement (Chantier 1 et Chantier 2)
 ----------------------------------------------------------------------------------------------------
 AJOUT DU 25/09/2026 - verification finale mise a jour (v2.7.1 et PR #17)
 
-  Mardik-Verification-Finale-2026-09-25.pdf   (6 pages, sommaire en page 1)
+  Mardik-Verification-Finale-2026-09-25.pdf   (9 pages, table des matieres en page 1, maquette du chapitre RITA)
                                     - la tracabilite complete d'une analyse (request_id partout, commande ops.tracer)
                                     - l'arbre des spans parents/enfants et deux traces Jaeger reelles, avant et apres
                                     - les retours de la seance du 25/09 verifies contre le code, et leur suite
