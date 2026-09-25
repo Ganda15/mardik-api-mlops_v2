@@ -111,10 +111,15 @@ def analyser_v2(
         span.set_attribute("mardik.version", bundle.version)
         span.set_attribute("mardik.request_id", rid)
         span.set_attribute("llm.modele", bundle.modele)  # le modèle réellement appelé (le manifeste dit celui visé)
-        sections = decouper(texte, taille_max=taille_max)
-        # Brique 19 : des sections voisines regroupées = moins d'appels, donc une queue de latence
-        # plus courte (on attend le plus lent). 0 dans le bundle = comportement d'origine.
-        sections = regrouper(sections, int(bundle.parametres.get("regroupement_caracteres", 0)))
+        # 25/09 : un span par étape du pipeline — le découpage, la consolidation, la notation et la calibration
+        # n'étaient pas mesurables dans Jaeger (seuls analyse.requete et llm.appel l'étaient).
+        with telemetry.tracer.start_as_current_span("pipeline.decoupage") as span_etape:
+            sections = decouper(texte, taille_max=taille_max)
+            # Brique 19 : des sections voisines regroupées = moins d'appels, donc une queue de latence
+            # plus courte (on attend le plus lent). 0 dans le bundle = comportement d'origine.
+            sections = regrouper(sections, int(bundle.parametres.get("regroupement_caracteres", 0)))
+            span_etape.set_attribute("mardik.caracteres", len(texte))
+            span_etape.set_attribute("mardik.sections", len(sections))
         span.set_attribute("mardik.sections", len(sections))
 
         parallelisme = max(1, int(bundle.parametres.get("parallelisme", 4)))
@@ -158,14 +163,28 @@ def analyser_v2(
         tokens_entree = sum(r[2] for r in resultats)
         tokens_sortie = sum(r[3] for r in resultats)
 
-        clauses_consolidees = consolider(par_section)
-        clauses_notees, _ = scorer(clauses_consolidees, texte)
-        # Une clause sans extrait vérifié n'est pas une détection (voir clauses_prouvees) :
-        # le score global est recalculé sur les seules clauses prouvées.
-        clauses_notees = clauses_prouvees(clauses_notees, texte)
-        confiance_globale = (
-            sum(c.confiance for c in clauses_notees) / len(clauses_notees) if clauses_notees else 0.0
-        )
+        with telemetry.tracer.start_as_current_span("pipeline.consolidation") as span_etape:
+            clauses_consolidees = consolider(par_section)
+            span_etape.set_attribute("mardik.clauses_brutes", sum(len(c) for c in par_section))
+            span_etape.set_attribute("mardik.clauses_consolidees", len(clauses_consolidees))
+        with telemetry.tracer.start_as_current_span("pipeline.notation") as span_etape:
+            clauses_notees, _ = scorer(clauses_consolidees, texte)
+            # Une clause sans extrait vérifié n'est pas une détection (voir clauses_prouvees) :
+            # le score global est recalculé sur les seules clauses prouvées.
+            clauses_notees = clauses_prouvees(clauses_notees, texte)
+            confiance_globale = (
+                sum(c.confiance for c in clauses_notees) / len(clauses_notees) if clauses_notees else 0.0
+            )
+            span_etape.set_attribute("mardik.clauses_prouvees", len(clauses_notees))
+            span_etape.set_attribute("mardik.confiance_globale", confiance_globale)
+        with telemetry.tracer.start_as_current_span("pipeline.calibration") as span_etape:
+            calib = bundle.parametres.get("calibration")
+            probas = [calibrer(c.confiance, calib) for c in clauses_notees]
+            globale_calibree = (round(sum(probas) / len(probas), 4)
+                                if probas and all(p is not None for p in probas) else None)
+            span_etape.set_attribute("mardik.calibration", (calib or {}).get("methode", "aucune"))
+            if globale_calibree is not None:
+                span_etape.set_attribute("mardik.confiance_globale_calibree", globale_calibree)
 
         latence = (time.perf_counter() - debut) * 1000
         telemetry.metriques.enregistrer(
@@ -194,10 +213,6 @@ def analyser_v2(
             sections=len(sections),
         )
 
-    calib = bundle.parametres.get("calibration")
-    probas = [calibrer(c.confiance, calib) for c in clauses_notees]
-    globale_calibree = (round(sum(probas) / len(probas), 4)
-                        if probas and all(p is not None for p in probas) else None)
     return ReponseAnalyseV2(
         clauses=[
             ClauseV2(type=c.type, extrait=c.extrait, confiance=c.confiance, sections=c.sections,

@@ -32,6 +32,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.api_v1 import analyser_v1
+from opentelemetry.trace import Status, StatusCode
+
 from app.api_v2 import analyser_v2, capturer_si_peu_sur, nouveau_request_id
 from app.llm_client import ErreurLLM, LLMClient
 from app.telemetry import Telemetry, build_default_telemetry
@@ -95,24 +97,42 @@ def analyse(
     telemetry: Telemetry = Depends(get_telemetry),
 ) -> dict | JSONResponse:
     rid = nouveau_request_id()
-    idx = registry.index()
-    active = idx.get("active")
-    canary = idx.get("canary")
-    canary_percent, _ = pourcentage_effectif(idx)
+    # 25/09 : un seul arbre du début à la fin — gateway.requete (parent) → gateway.routage (la décision de version)
+    # et analyse.requete (l'analyse elle-même). Avant, le choix v1/v2 du canary n'était visible que dans l'en-tête.
+    with telemetry.tracer.start_as_current_span("gateway.requete") as span:
+        span.set_attribute("mardik.request_id", rid)
+        with telemetry.tracer.start_as_current_span("gateway.routage") as span_routage:
+            idx = registry.index()
+            active = idx.get("active")
+            canary = idx.get("canary")
+            canary_percent, _ = pourcentage_effectif(idx)
 
-    tirage = random.uniform(0, 100)
-    version_servie = choisir_version(active, canary, canary_percent, tirage)
+            tirage = random.uniform(0, 100)
+            version_servie = choisir_version(active, canary, canary_percent, tirage)
+            span_routage.set_attribute("gateway.active", str(active))
+            span_routage.set_attribute("gateway.canary", str(canary))
+            span_routage.set_attribute("gateway.canary_percent", float(canary_percent))
+            span_routage.set_attribute("gateway.tirage", round(tirage, 3))
+            span_routage.set_attribute("gateway.version_servie", str(version_servie))
+        span.set_attribute("mardik.version", str(version_servie))
 
-    bundle = registry.bundle(version_servie)
-    client = LLMClient(bundle)
+        bundle = registry.bundle(version_servie)
+        client = LLMClient(bundle)
 
-    try:
-        if bundle.strategie == "map_reduce_clauses":
-            reponse = analyser_v2(requete.texte, client, telemetry, request_id=rid)
-            capturer_si_peu_sur(requete.texte, reponse, telemetry)  # brique 17 (Ch2)
+        try:
+            if bundle.strategie == "map_reduce_clauses":
+                reponse = analyser_v2(requete.texte, client, telemetry, request_id=rid)
+                capturer_si_peu_sur(requete.texte, reponse, telemetry)  # brique 17 (Ch2)
+            else:
+                reponse = analyser_v1(requete.texte, client, telemetry)
+        except ErreurLLM as exc:
+            erreur = exc
+            span.record_exception(exc)
+            span.set_status(Status(StatusCode.ERROR, "fournisseur LLM indisponible"))
         else:
-            reponse = analyser_v1(requete.texte, client, telemetry)
-    except ErreurLLM as exc:
+            erreur = None
+    if erreur is not None:
+        exc = erreur
         # Le frontend passe par ici : une panne reste explicite, signée et corrélable.
         return JSONResponse(
             status_code=503,

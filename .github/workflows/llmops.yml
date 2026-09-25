@@ -102,6 +102,9 @@ jobs:
               - 'models/v2/config.yaml'
               - 'prompts/**'
               - 'app/pipeline/**'
+              - 'app/api_v2.py'                    # 25/09 : score global et calibration y sont calculés
+              - 'app/llm_client.py'                # 25/09 : l'appel au modèle (paramètres, reprises)
+              - 'eval/*.py'                        # 25/09 : le code des évals lui-même (run_eval, calibration…)
               - 'eval/attendus.jsonl'
               - 'eval/attendus_production.jsonl'   # brique 17 : un cas de production ajouté relance le gate
               - 'eval/thresholds.yml'
